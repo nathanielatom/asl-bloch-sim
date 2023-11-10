@@ -1,5 +1,5 @@
 # Figures
-*.png
+project_figures/*.png
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
