@@ -1,6 +1,7 @@
 # Figures
 project_figures/*.png
 .DS_Store
+media/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

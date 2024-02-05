@@ -1,0 +1,30 @@
+[project]
+name = "asl_bloch_sim"
+version = "0.0.1"
+authors = [
+  { name="Adam Suban-Loewen"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+description = "Bloch Simulations of Arterial Spin Labelling (ASL)"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "numpy",
+    "scipy",
+    "bokeh",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+gpu = ["cupy-cuda11x"]
+
+[tool.setuptools]
+py-modules = []
+
+[project.urls]
+Homepage = "https://github.com/nathanielatom/asl-bloch-sim"
+Issues = "https://github.com/nathanielatom/asl-bloch-sim/issues"
