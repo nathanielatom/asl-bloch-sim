@@ -23,7 +23,7 @@ test = ["pytest"]
 gpu = ["cupy-cuda11x"]
 
 [tool.setuptools]
-py-modules = []
+py-modules = ["asl_bloch_sim"]
 
 [project.urls]
 Homepage = "https://github.com/nathanielatom/asl-bloch-sim"
