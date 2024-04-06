@@ -3,7 +3,7 @@ import scipy.signal as sig
 
 from . import bloch
 
-def sinc_pulse(flip_angle, duration, bandwidth, dt, window='hann'):
+def sinc_pulse(flip_angle, duration, bandwidth, dt, phase_angle=0, window='hann'):
     """
     Generate a sinc pulse with a given flip angle and duration.
 
@@ -17,6 +17,8 @@ def sinc_pulse(flip_angle, duration, bandwidth, dt, window='hann'):
         Pulse bandwidth in Hz.
     dt : float
         Time step in seconds.
+    phase_angle : float, optional
+        Desired phase angle in degrees. Default is 0.
     window : str, optional
         Window function to apply to the sinc pulse. Default is Hann.
 
@@ -38,15 +40,15 @@ def sinc_pulse(flip_angle, duration, bandwidth, dt, window='hann'):
         to achieve the desired flip angle.
 
     """
+    theta, alpha = np.deg2rad(phase_angle), np.deg2rad(flip_angle)
     time_bandwidth_product = duration * bandwidth
     x = np.linspace(-time_bandwidth_product / 2, time_bandwidth_product / 2,
                     round(duration / dt), endpoint=False)
 
     pulse = sig.get_window(window, len(x)) * np.sinc(x)
-    B1 = np.deg2rad(flip_angle) / (np.trapz(pulse, dx=dt) * bloch.GAMMA)
-    pulse *= B1 # Tesla
+    B1 = np.exp(1j * theta) * alpha / (np.trapz(pulse, dx=dt) * bloch.GAMMA)
 
-    return pulse
+    return B1 * pulse # Tesla
 
 def adiabaticity(pulse_am, pulse_fm, B0, dt):
     """
@@ -87,7 +89,7 @@ def adiabaticity(pulse_am, pulse_fm, B0, dt):
     Bz_eff = B0 - pulse_fm / bloch.GAMMA_BAR
     return bloch.GAMMA * np.sqrt(pulse_am**2 + Bz_eff**2) / np.abs(np.gradient(np.arctan2(pulse_am, Bz_eff), dt))
 
-def adiabatic_pulse(flip_angle, duration, bandwidth, dt, type='sech'):
+def adiabatic_pulse(flip_angle, duration, bandwidth, rf_stretch, dt, type='sech'):
     """
     Generate an adiabatic pulse with a given flip angle and duration.
 
@@ -119,21 +121,23 @@ def adiabatic_pulse(flip_angle, duration, bandwidth, dt, type='sech'):
     instantaneous effective magnetic field in the rotating frame.
 
     """
-    # pulse_am[-1] / pulse_fm[-1] = np.tan(np.deg2rad(flip_angle)) / bloch.GAMMA_BAR
+    # pulse_am[-1] / pulse_fm[-1] = ratio
+    ratio = np.tan(np.deg2rad(flip_angle)) / bloch.GAMMA_BAR
 
     time_bandwidth_product = duration * bandwidth
-    t = np.linspace(-time_bandwidth_product / 2, time_bandwidth_product / 2,
-                    round(duration / dt), endpoint=False)
+    x = np.linspace(-time_bandwidth_product / 2, time_bandwidth_product / 2,
+                    round(duration / dt), endpoint=False) / rf_stretch
 
     if type == 'sech':
-        pulse_am = np.sech(t / (duration / 2))
-        pulse_fm = -bandwidth * np.tanh(t / (duration / 2))
+        pulse_am = np.cosh(x) ** -1
+        pulse_fm = -bandwidth * np.tanh(x)
     else:
         message = f'Unsupported adiabatic pulse type: {type}'
         raise ValueError(message)
 
-    B1 = np.deg2rad(flip_angle) / (np.trapz(pulse_am, dx=dt) * bloch.GAMMA)
-    pulse_am *= B1 # Tesla
+    # pulse_am /= (np.trapz(pulse_am, dx=dt) )#* bloch.GAMMA) # Tesla
+    # pulse_am /= bloch.GAMMA_BAR # Tesla
+    pulse_am /= 1e4
 
     return pulse_am, pulse_fm
 

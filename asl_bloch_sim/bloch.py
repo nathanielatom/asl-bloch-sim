@@ -1,10 +1,30 @@
 import string
 
+import tqdm
+import tqdm.notebook
+
 from asl_bloch_sim import xp
 from asl_bloch_sim import get_array_module
 
-# import numpy as np
-# from numba import njit
+def _get_shell_type():
+    """
+    Returns the current shell type, that is one of `pq.utils.SHELL_TYPES`.
+    """
+    try:
+        shell_types = {"<class 'google.colab._shell.Shell'>": 'colaboratory notebook',
+                       "<class 'ipykernel.zmqshell.ZMQInteractiveShell'>": 'jupyter notebook',
+                       "<class 'IPython.terminal.interactiveshell.TerminalInteractiveShell'>": 'ipython'}
+        return shell_types[str(type(get_ipython()))]
+    except (NameError, KeyError):
+        pass
+
+    return 'python'
+
+SHELL = _get_shell_type()
+SHELL_TYPES = {'python', 'ipython', 'jupyter notebook', 'colaboratory notebook'}
+# convenience and user code readability
+progress_bar = tqdm.tqdm if SHELL != 'jupyter notebook' else tqdm.notebook.tqdm
+progress_print = tqdm.tqdm.write
 
 GAMMA_BAR = 42.5759e6 # Gyromagnetic ratio (Hz/T)
 GAMMA = 2 * xp.pi * GAMMA_BAR # Gyromagnetic ratio (rads/T/s)
@@ -147,8 +167,60 @@ GAMMA = 2 * xp.pi * GAMMA_BAR # Gyromagnetic ratio (rads/T/s)
 #     v_rot = v * cos_theta + cross_kv * sin_theta + k * dot_kv * (1 - cos_theta)
 #     return v_rot
 
+def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity=1,
+                      rf_fm=0, axis=-1):
+    """
+    Construct the magnetic field vector from the RF and gradient waveforms.
+
+    Parameters
+    ----------
+    rf_am : ndarray
+        RF amplitude waveform in Tesla.
+    G : ndarray, optional
+        Gradient waveform in Tesla/m. Default is 0.
+    position : ndarray, optional
+        Spatial position vector in meters. Default is 0.
+    off_resonance : float, optional
+        Off-resonance frequency in Hz. Default is 0.
+    B1_sensitivity : float or ndarray, optional
+        B1 sensitivity factor. Default is 1.
+    rf_fm : ndarray, optional
+        RF frequency waveform in Hz. Default is 0.
+    axis : int, optional
+        Axis along the field array which represents the 2D or 3D spatial field vector.
+
+    Returns
+    -------
+    ndarray
+        Magnetic field vector in Tesla. Shape is extended from rf_am by G * position,
+        off_resonance, B1_sensitivity, and coordinates for the spatial axis.
+
+    """
+    xp = get_array_module(rf_am)
+
+    dBz = off_resonance / GAMMA_BAR # T
+    if not xp.isscalar(B1_sensitivity):
+        B1_sensitivity = xp.expand_dims(B1_sensitivity, rf_am.ndim)
+    rf_am = xp.expand_dims(B1_sensitivity * rf_am, rf_am.ndim * int(not xp.isscalar(dBz))).astype(xp.complex64) # T
+    Bx, By = rf_am.real, rf_am.imag
+
+    if not xp.isscalar(rf_fm):
+        rf_fm = xp.expand_dims(rf_fm, int(not xp.isscalar(dBz)))
+
+    B1z = rf_fm / GAMMA_BAR # T
+    Bz = dot(G, position, axis=axis)
+    if not xp.isscalar(Bz):
+        Bz = xp.expand_dims(Bz, Bz.ndim * int(not xp.isscalar(dBz)))
+    B = xp.moveaxis(xp.asarray(xp.broadcast_arrays(Bx, By, Bz + dBz + B1z), dtype=xp.float32), 0, axis)
+
+    from asl_bloch_sim import xp # use module level library (even if RF array was numpy)
+    return xp.asarray(B)
+
 def dot(a, b, *, keepdims=False, axis=-1):
     xp = get_array_module(a, b)
+    if xp.isscalar(a) or xp.isscalar(b):
+        return a * b
+
     a_shape = string.ascii_letters[:a.ndim]
     out_shape = a_shape.replace(a_shape[axis], '')
     subscripts = f'{a_shape},{a_shape}->{out_shape}'
@@ -224,10 +296,13 @@ def unit_field_and_angle(B_field, dt, *, tol=1e-14, axis=-1):
     return b_field, ang
 
 def precess(magnetization, B_field, dt, *, axis=-1, **kwargs):
+    magnetization = xp.asarray(magnetization, dtype=xp.float32)
+    for dim in range(B_field.ndim - magnetization.ndim):
+        magnetization = xp.expand_dims(magnetization, axis=0 if axis == -1 or axis == B_field.ndim - 1 else -1)
     return rodrigues_rotation(magnetization, *unit_field_and_angle(B_field, dt, axis=axis, **kwargs),
                               normalize=False, axis=axis)
 
-def relax(magnetization, T1, T2, dt, M0=(0, 0, 1), *,
+def relax(magnetization, T1, T2, dt, *, M0=(0, 0, 1),
           extend_shapes=True, match_shapes=True, axis=-1):
     """
     Apply relaxation to the magnetization vector.
@@ -285,6 +360,7 @@ def relax(magnetization, T1, T2, dt, M0=(0, 0, 1), *,
     if (lmag := magnetization.shape[axis]) != len(M0):
         message = f"Length of M0: {len(M0)}, must be equal to the length of the spatial axis of the magnetization array: {lmag}"
         raise ValueError(message)
+    T1, T2 = xp.asarray(T1), xp.asarray(T2)
     try:
         T2, T1 = xp.broadcast_arrays(T2, T1)
     except ValueError:
@@ -292,9 +368,9 @@ def relax(magnetization, T1, T2, dt, M0=(0, 0, 1), *,
     transverse_relaxation_decay = 1 - dt / T2
     longitudinal_relaxation_decay = 1 - dt / T1
     longitudinal_relaxation_rise = dt / T1
-    relaxation_decay = xp.moveaxis([transverse_relaxation_decay,
-                                    transverse_relaxation_decay,
-                                    longitudinal_relaxation_decay], 0, -1)
+    relaxation_decay = xp.moveaxis(xp.asarray([transverse_relaxation_decay,
+                                               transverse_relaxation_decay,
+                                               longitudinal_relaxation_decay]), 0, -1)
     shape = tuple([-1 if ax == axis else 1 for ax in range(magnetization.ndim)])
     if match_shapes and extend_shapes and magnetization.shape[:T1.ndim] == T1.shape:
         outshape = T1.shape + shape[T1.ndim:]
@@ -304,5 +380,14 @@ def relax(magnetization, T1, T2, dt, M0=(0, 0, 1), *,
         outshape = list(magnetization.shape)
         outshape[axis] = -1
         relaxation_decay = xp.swapaxes(relaxation_decay, -1, axis)[..., 0]
-    rise = xp.array(M0).reshape(shape) * longitudinal_relaxation_rise.reshape(outshape)
+    M0 = xp.array(M0, dtype=xp.float32).reshape(shape)
+    rise = M0 * longitudinal_relaxation_rise.reshape(outshape)
     return magnetization * relaxation_decay.reshape(outshape) + rise
+
+def sim(B_field, T1, T2, duration, dt, *, init_mag=(0, 0, 1), **kwargs):
+    mag = init_mag
+    mags = xp.empty_like(B_field)
+    for step in progress_bar(range(round(duration / dt))):
+        mag = relax(precess(mag, B_field[step], dt, **kwargs), T1, T2, dt)
+        mags[step] = mag
+    return mags
