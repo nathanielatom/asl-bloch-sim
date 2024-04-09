@@ -1,171 +1,10 @@
 import string
 
-import tqdm
-import tqdm.notebook
-
-from asl_bloch_sim import xp
-from asl_bloch_sim import get_array_module
-
-def _get_shell_type():
-    """
-    Returns the current shell type, that is one of `pq.utils.SHELL_TYPES`.
-    """
-    try:
-        shell_types = {"<class 'google.colab._shell.Shell'>": 'colaboratory notebook',
-                       "<class 'ipykernel.zmqshell.ZMQInteractiveShell'>": 'jupyter notebook',
-                       "<class 'IPython.terminal.interactiveshell.TerminalInteractiveShell'>": 'ipython'}
-        return shell_types[str(type(get_ipython()))]
-    except (NameError, KeyError):
-        pass
-
-    return 'python'
-
-SHELL = _get_shell_type()
-SHELL_TYPES = {'python', 'ipython', 'jupyter notebook', 'colaboratory notebook'}
-# convenience and user code readability
-progress_bar = tqdm.tqdm if SHELL != 'jupyter notebook' else tqdm.notebook.tqdm
-progress_print = tqdm.tqdm.write
+from asl_bloch_sim import xp, get_array_module
+from asl_bloch_sim import progress_bar, progress_print
 
 GAMMA_BAR = 42.5759e6 # Gyromagnetic ratio (Hz/T)
 GAMMA = 2 * xp.pi * GAMMA_BAR # Gyromagnetic ratio (rads/T/s)
-
-# @njit(parallel=True)
-# def norm_axis_0(arr):
-#     return np.sqrt((arr**2).sum(axis=0))
-
-# @njit(parallel=True)
-# def dot_axis_0(a, b):
-#     if a.ndim == 1:
-#         return np.dot(a, b)
-#     elif a.ndim == 2:
-#         result = np.zeros(a.shape[1])
-#         for i in range(a.shape[1]):
-#             result[i] = np.dot(a[:, i], b[:, i])
-#         return result
-#     elif a.ndim == 3:
-#         result = np.zeros(a.shape[1:])
-#         for i in range(a.shape[1]):
-#             for j in range(a.shape[2]):
-#                 result[i, j] = np.dot(a[:, i, j], b[:, i, j])
-#         return result
-#     elif a.ndim == 4:
-#         result = np.zeros(a.shape[1:])
-#         for i in range(a.shape[1]):
-#             for j in range(a.shape[2]):
-#                 for k in range(a.shape[3]):
-#                     result[i, j, k] = np.dot(a[:, i, j, k], b[:, i, j, k])
-#         return result
-#     else:
-#         raise ValueError("Array dimension must be 1, 2, 3, or 4.")
-
-# @njit
-# def cross_axis_0(a, b):
-#     """
-#     Compute the cross product of two vectors.
-
-#     Parameters
-#     ----------
-#     a : ndarray
-#         First vector. Axis along which the cross product is computed is 0.
-#     b : ndarray
-#         Second vector. Axis along which the cross product is computed is 0.
-
-#     Returns
-#     -------
-#     ndarray
-#         Cross product of a and b.
-
-#     Notes
-#     -----
-#     The cross product is defined as:
-
-#     a x b = (a2b3 - a3b2, a3b1 - a1b3, a1b2 - a2b1)
-
-#     Examples
-#     --------
-#     >>> a = np.array([1, 0, 0])
-#     >>> b = np.array([0, 1, 0])
-#     >>> cross(a, b)
-#     array([0, 0, 1])
-
-#     """
-#     a = np.asarray(a, dtype=np.float64)
-#     b = np.asarray(b, dtype=np.float64)
-#     c = np.empty((3, *a.shape[1:]), dtype=np.float64)
-
-#     c[0] = a[1] * b[2] - a[2] * b[1]
-#     c[1] = a[2] * b[0] - a[0] * b[2]
-#     c[2] = a[0] * b[1] - a[1] * b[0]
-
-#     return c
-
-# def cross_product_numexpr(a, b, axis=0):
-#     import numexpr as ne
-#     # move axis of a and b to the start
-#     a = np.moveaxis(a, axis, 0)
-#     b = np.moveaxis(b, axis, 0)
-#     ax, ay, az = a
-#     bx, by, bz = b
-#     out = np.array([ne.evaluate("ay * bz - az * by"),
-#                     ne.evaluate("az * bx - ax * bz"),
-#                     ne.evaluate("ax * by - ay * bx")])
-#     return out
-
-# def norm_numexpr(arr, axis=0):
-#     import numexpr as ne
-#     # move axis of a and b to the start
-#     arr = np.moveaxis(arr, axis, 0)
-#     ax, ay, az = arr
-#     out = ne.evaluate("sqrt(ax ** 2 + ay ** 2 + az ** 2)")
-#     return out
-
-# @njit(parallel=True)
-# def rodrigues_rotation_axis_0(v, k, theta):
-#     """
-#     Apply Rodrigues rotation formula to rotate a vector v around an axis k by
-#     an angle theta.
-
-#     Parameters
-#     ----------
-#     v : ndarray
-#         Input vector to be rotated. Axis along which the rotation is performed is 0.
-#     k : ndarray
-#         Axis of rotation. Axis along which the rotation is performed is 0.
-#     theta : float
-#         Angle of rotation in radians.
-
-#     Returns
-#     -------
-#     ndarray
-#         Rotated vector.
-
-#     Notes
-#     -----
-#     The Rodrigues rotation formula is given by:
-
-#     v_rot = v * cos(theta) + (k x v) * sin(theta) + k * (k . v) * (1 - cos(theta))
-
-#     where v_rot is the rotated vector, x denotes the cross product, and . denotes
-#     the dot product.
-
-#     Examples
-#     --------
-#     >>> v = np.array([1, 0, 0])
-#     >>> k = np.array([0, 0, 1])
-#     >>> theta = np.pi / 2
-#     >>> rodrigues_rotation(v, k, theta)
-#     array([0., 1., 0.])
-
-#     """
-#     k = np.asarray(k, dtype=np.float64)
-#     v = np.asarray(v, dtype=np.float64)
-#     k = k / norm_axis_0(k)
-#     sin_theta = np.sin(theta)
-#     cos_theta = np.cos(theta)
-#     dot_kv = dot_axis_0(k, v)
-#     cross_kv = cross_axis_0(k, v)
-#     v_rot = v * cos_theta + cross_kv * sin_theta + k * dot_kv * (1 - cos_theta)
-#     return v_rot
 
 def expand_dims_to(arr1, arr2, dimodifier=0):
     """
@@ -254,6 +93,49 @@ def dot(a, b, *, keepdims=False, axis=-1):
     return out
 
 def rodrigues_rotation(v, k, theta, *, normalize=True, axis=-1):
+    """
+    Apply Rodrigues rotation formula to rotate a vector `v` around an axis `k` by an angle `theta`.
+
+    Parameters
+    ----------
+    v : array_like
+        The vector to be rotated.
+    k : array_like
+        The rotation axis.
+    theta : float
+        The rotation angle in radians.
+    normalize : bool, optional
+        Whether to normalize the rotation axis `k`. Default is True.
+    axis : int, optional
+        The axis along which to compute the norm of `k`. Default is -1.
+
+    Returns
+    -------
+    array_like
+        The rotated vector.
+
+    Notes
+    -----
+    The Rodrigues rotation formula is given by:
+
+    .. math::
+
+        v_{\\text{rot}} = v \\cos(\\theta) + (k \\times v) \\sin(\\theta) + k (k \\cdot v) (1 - \\cos(\\theta))
+
+    where :math:`v_{\\text{rot}}` is the rotated vector, :math:`v` is the original vector, :math:`k` is the rotation axis,
+    and :math:`\\theta` is the rotation angle.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from asl_bloch_sim import bloch
+    >>> v = np.array([1, 0, 0])
+    >>> k = np.array([0, 0, 1])
+    >>> theta = np.pi / 2
+    >>> bloch.rodrigues_rotation(v, k, theta)
+    array([0., 1., 0.])
+
+    """
     xp = get_array_module(v, k, theta)
     if normalize:
         k = k / xp.linalg.norm(k, axis=axis, keepdims=True)

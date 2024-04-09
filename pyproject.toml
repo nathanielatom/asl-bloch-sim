@@ -20,7 +20,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest"]
-gpu = ["cupy-cuda11x"]
+gpu = ["cupy-cuda12x!=13.0.0"]
 
 [tool.setuptools]
 py-modules = ["asl_bloch_sim"]

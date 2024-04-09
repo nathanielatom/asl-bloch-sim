@@ -1,6 +1,9 @@
 import os as _os
 import warnings as _warnings
 
+import tqdm
+import tqdm.notebook
+
 __version__ = "0.0.1"
 
 def get_array_module(*args):
@@ -31,3 +34,23 @@ else:
     gpu = False
 
 asnumpy = xp.asnumpy if gpu else lambda arr, *args, **kwargs: arr
+
+def _get_shell_type():
+    """
+    Returns the current shell type, that is one of `pq.utils.SHELL_TYPES`.
+    """
+    try:
+        shell_types = {"<class 'google.colab._shell.Shell'>": 'colaboratory notebook',
+                       "<class 'ipykernel.zmqshell.ZMQInteractiveShell'>": 'jupyter notebook',
+                       "<class 'IPython.terminal.interactiveshell.TerminalInteractiveShell'>": 'ipython'}
+        return shell_types[str(type(get_ipython()))]
+    except (NameError, KeyError):
+        pass
+
+    return 'python'
+
+SHELL = _get_shell_type()
+SHELL_TYPES = {'python', 'ipython', 'jupyter notebook', 'colaboratory notebook'}
+# convenience and user code readability
+progress_bar = tqdm.tqdm if SHELL != 'jupyter notebook' else tqdm.notebook.tqdm
+progress_print = tqdm.tqdm.write
