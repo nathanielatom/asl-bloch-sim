@@ -167,6 +167,28 @@ GAMMA = 2 * xp.pi * GAMMA_BAR # Gyromagnetic ratio (rads/T/s)
 #     v_rot = v * cos_theta + cross_kv * sin_theta + k * dot_kv * (1 - cos_theta)
 #     return v_rot
 
+def expand_dims_to(arr1, arr2):
+    """
+    Expand dimensions of arr1 to be broadcastable with arr2.
+
+    Parameters
+    ----------
+    arr1 : ndarray
+        Array to expand after the last axis.
+    arr2 : ndarray
+        Array to match dimensions.
+
+    Returns
+    -------
+    ndarray
+        Array with dimensions expanded.
+
+    """
+    xp = get_array_module(arr1, arr2)
+    if not xp.isscalar(arr2):
+        arr1 = xp.expand_dims(arr1, tuple(range(-arr2.ndim, 0)))
+    return arr1
+
 def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity=1,
                       rf_fm=0, axis=-1):
     """
@@ -188,6 +210,7 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
         RF frequency waveform in Hz. Default is 0.
     axis : int, optional
         Axis along the field array which represents the 2D or 3D spatial field vector.
+        Also used for the dot product between gradient and position vectors. Default is -1.
 
     Returns
     -------
@@ -199,19 +222,16 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
     xp = get_array_module(rf_am)
 
     dBz = off_resonance / GAMMA_BAR # T
-    if not xp.isscalar(B1_sensitivity):
-        B1_sensitivity = xp.expand_dims(B1_sensitivity, rf_am.ndim)
-    rf_am = xp.expand_dims(B1_sensitivity * rf_am, rf_am.ndim * int(not xp.isscalar(dBz))).astype(xp.complex64) # T
+    rf_am = expand_dims_to(expand_dims_to(rf_am, dBz), B1_sensitivity)
+    rf_am = (B1_sensitivity * rf_am).astype(xp.complex64) # T
     Bx, By = rf_am.real, rf_am.imag
 
-    if not xp.isscalar(rf_fm):
-        rf_fm = xp.expand_dims(rf_fm, int(not xp.isscalar(dBz)))
-
+    rf_fm = expand_dims_to(rf_fm, dBz)
     B1z = rf_fm / GAMMA_BAR # T
-    Bz = dot(G, position, axis=axis)
-    if not xp.isscalar(Bz):
-        Bz = xp.expand_dims(Bz, Bz.ndim * int(not xp.isscalar(dBz)))
-    B = xp.moveaxis(xp.asarray(xp.broadcast_arrays(Bx, By, Bz + dBz + B1z), dtype=xp.float32), 0, axis)
+    Bz_pos = expand_dims_to(dot(G, position, axis=axis), dBz)
+    Bz = expand_dims_to(Bz_pos + dBz + B1z, B1_sensitivity)
+
+    B = xp.moveaxis(xp.asarray(xp.broadcast_arrays(Bx, By, Bz), dtype=xp.float32), 0, axis)
 
     from asl_bloch_sim import xp # use module level library (even if RF array was numpy)
     return xp.asarray(B)

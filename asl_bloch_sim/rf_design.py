@@ -89,7 +89,7 @@ def adiabaticity(pulse_am, pulse_fm, B0, dt):
     Bz_eff = B0 - pulse_fm / bloch.GAMMA_BAR
     return bloch.GAMMA * np.sqrt(pulse_am**2 + Bz_eff**2) / np.abs(np.gradient(np.arctan2(pulse_am, Bz_eff), dt))
 
-def adiabatic_pulse(flip_angle, duration, bandwidth, rf_stretch, dt, type='sech'):
+def adiabatic_pulse(flip_angle, duration, bandwidth, stretch, dt, amplitude=1e-5, type='sech'):
     """
     Generate an adiabatic pulse with a given flip angle and duration.
 
@@ -103,6 +103,8 @@ def adiabatic_pulse(flip_angle, duration, bandwidth, rf_stretch, dt, type='sech'
         Pulse bandwidth in Hz.
     dt : float
         Time step in seconds.
+    amplitude : float, optional
+        Pulse amplitude in Tesla. Default is 10 µT. This may need to be adjusted along with the bandwidth.
     type : str, optional
         Type of adiabatic pulse. Default is hyperbolic secant.
 
@@ -121,23 +123,20 @@ def adiabatic_pulse(flip_angle, duration, bandwidth, rf_stretch, dt, type='sech'
     instantaneous effective magnetic field in the rotating frame.
 
     """
+    # TODO: implement flip angle for adiabadic pulse
     # pulse_am[-1] / pulse_fm[-1] = ratio
     ratio = np.tan(np.deg2rad(flip_angle)) / bloch.GAMMA_BAR
 
     time_bandwidth_product = duration * bandwidth
     x = np.linspace(-time_bandwidth_product / 2, time_bandwidth_product / 2,
-                    round(duration / dt), endpoint=False) / rf_stretch
+                    round(duration / dt), endpoint=False) / stretch
 
     if type == 'sech':
-        pulse_am = np.cosh(x) ** -1
+        pulse_am = amplitude * np.cosh(x) ** -1
         pulse_fm = -bandwidth * np.tanh(x)
     else:
         message = f'Unsupported adiabatic pulse type: {type}'
         raise ValueError(message)
-
-    # pulse_am /= (np.trapz(pulse_am, dx=dt) )#* bloch.GAMMA) # Tesla
-    # pulse_am /= bloch.GAMMA_BAR # Tesla
-    pulse_am /= 1e4
 
     return pulse_am, pulse_fm
 
