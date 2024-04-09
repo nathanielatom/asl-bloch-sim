@@ -96,7 +96,7 @@ def adiabatic_pulse(flip_angle, duration, bandwidth, stretch, dt, amplitude=1e-5
     Parameters
     ----------
     flip_angle : float
-        Desired flip angle in degrees.
+        Desired flip angle in degrees. Not yet implemented.
     duration : float
         Pulse duration in seconds.
     bandwidth : float
@@ -133,14 +133,14 @@ def adiabatic_pulse(flip_angle, duration, bandwidth, stretch, dt, amplitude=1e-5
 
     if type == 'sech':
         pulse_am = amplitude * np.cosh(x) ** -1
-        pulse_fm = -bandwidth * np.tanh(x)
+        pulse_fm = -bandwidth * np.tanh(x) / 2
     else:
         message = f'Unsupported adiabatic pulse type: {type}'
         raise ValueError(message)
 
     return pulse_am, pulse_fm
 
-def extend(pulse, duration, dt):
+def extend(pulse, duration, dt, axis=0):
     """
     Extend the pulse waveform to a given duration.
 
@@ -152,6 +152,8 @@ def extend(pulse, duration, dt):
         Desired pulse duration in seconds.
     dt : float
         Time step in seconds.
+    axis : int, optional
+        Axis along which to extend the waveform. Default is 0.
 
     Returns
     -------
@@ -164,5 +166,8 @@ def extend(pulse, duration, dt):
     to the end of the waveform.
 
     """
-    n = round(duration / dt) - len(pulse)
-    return np.append(pulse, np.zeros(n))
+    shap = list(np.shape(pulse))
+    num_zero = round(duration / dt) - shap[axis]
+    shap[axis] = num_zero
+    zero = np.broadcast_to(bloch.expand_dims_to(np.zeros(num_zero), pulse, dimodifier=-1), shap)
+    return np.append(pulse, zero, axis=axis)

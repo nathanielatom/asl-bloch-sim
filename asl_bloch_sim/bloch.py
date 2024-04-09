@@ -167,7 +167,7 @@ GAMMA = 2 * xp.pi * GAMMA_BAR # Gyromagnetic ratio (rads/T/s)
 #     v_rot = v * cos_theta + cross_kv * sin_theta + k * dot_kv * (1 - cos_theta)
 #     return v_rot
 
-def expand_dims_to(arr1, arr2):
+def expand_dims_to(arr1, arr2, dimodifier=0):
     """
     Expand dimensions of arr1 to be broadcastable with arr2.
 
@@ -177,6 +177,8 @@ def expand_dims_to(arr1, arr2):
         Array to expand after the last axis.
     arr2 : ndarray
         Array to match dimensions.
+    dimodifier : int, optional
+        Number of manual extra dimensions to expand. Default is 0.
 
     Returns
     -------
@@ -186,7 +188,7 @@ def expand_dims_to(arr1, arr2):
     """
     xp = get_array_module(arr1, arr2)
     if not xp.isscalar(arr2):
-        arr1 = xp.expand_dims(arr1, tuple(range(-arr2.ndim, 0)))
+        arr1 = xp.expand_dims(arr1, tuple(range(-arr2.ndim - dimodifier, 0)))
     return arr1
 
 def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity=1,
