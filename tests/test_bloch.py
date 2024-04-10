@@ -41,7 +41,7 @@ def test_relax_unextended_shapes():
 
     extented = bloch.relax(mag, T1[..., 0], T2[..., 0], dt)
     unextended = bloch.relax(mag, T1, T2, dt, extend_shapes=False)
-    assert np.all(extented == unextended)
+    np.testing.assert_array_equal(extented, unextended)
 
 def test_relax_match_shapes():
     dt = 0.001
@@ -103,4 +103,4 @@ def test_relax_integration():
 )
 def test_dot(a, b, keepdims, axis, expected):
     result = bloch.dot(a, b, keepdims=keepdims, axis=axis)
-    assert np.array_equal(result, expected)
+    np.testing.assert_array_equal(result, expected)
