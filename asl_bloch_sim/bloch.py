@@ -1,5 +1,3 @@
-import string
-
 from asl_bloch_sim import xp, get_array_module
 from asl_bloch_sim import progress_bar, progress_print
 
@@ -118,15 +116,7 @@ def dot(a, b, *, keepdims=False, axis=-1):
     if xp.isscalar(a) or xp.isscalar(b):
         return a * b
 
-    a_shape = string.ascii_letters[:a.ndim]
-    out_shape = a_shape.replace(a_shape[axis], '')
-    subscripts = f'{a_shape},{a_shape}->{out_shape}'
-    out = xp.einsum(subscripts, a, b)
-    if keepdims:
-        shap = list(a.shape)
-        shap[axis] = 1
-        return out.reshape(shap)
-    return out
+    return xp.sum(a * b, axis=axis, keepdims=keepdims)
 
 def rodrigues_rotation(v, k, theta, *, normalize=True, axis=-1):
     """
