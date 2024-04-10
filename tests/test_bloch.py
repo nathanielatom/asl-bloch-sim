@@ -71,3 +71,36 @@ def test_relax_integration():
     mag = np.random.random((5, 3))
     mags = np.array([mag := bloch.relax(mag, T1, T2, dt) for _ in range(round(duration / dt))])
     assert mags.shape == (5000, 20, 30, 5, 3)
+
+@pytest.mark.parametrize(
+    "a, b, keepdims, axis, expected",
+    [
+        # Test case 1: 1D arrays
+        (
+            np.array([1, 2, 3]),
+            np.array([4, 5, 6]),
+            False,
+            -1,
+            32,
+        ),
+        # Test case 2: 2D arrays
+        (
+            np.array([[1, 2, 3], [4, 5, 6]]),
+            np.array([[7, 8, 9], [10, 11, 12]]),
+            True,
+            0,
+            np.array([[47, 71, 99]]),
+        ),
+        # Test case 3: 3D arrays
+        (
+            np.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]]),
+            np.array([[[13, 14, 15], [16, 17, 18]], [[19, 20, 21], [22, 23, 24]]]),
+            False,
+            2,
+            np.array([[86, 257], [482, 761]]),
+        ),
+    ],
+)
+def test_dot(a, b, keepdims, axis, expected):
+    result = bloch.dot(a, b, keepdims=keepdims, axis=axis)
+    assert np.array_equal(result, expected)

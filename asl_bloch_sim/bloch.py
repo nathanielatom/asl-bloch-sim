@@ -78,6 +78,42 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
     return xp.asarray(B)
 
 def dot(a, b, *, keepdims=False, axis=-1):
+    """
+    Compute the dot product of two arrays.
+
+    Parameters
+    ----------
+    a : array_like
+        First input array.
+    b : array_like
+        Second input array.
+    keepdims : bool, optional
+        If True, the output array will have the same number of dimensions as the input arrays, with size 1 in the reduced dimensions. Default is False.
+    axis : int, optional
+        Axis along which the dot product is computed. Default is -1.
+
+    Returns
+    -------
+    ndarray
+        Dot product of `a` and `b`.
+
+    Raises
+    ------
+    ValueError: If the input arrays have incompatible shapes.
+
+    Notes
+    -----
+    - If either `a` or `b` is a scalar, the dot product is computed as the element-wise multiplication of `a` and `b.
+    - The dot product is computed using the Einstein summation convention.
+
+    Examples
+    --------
+    >>> a = [1, 2, 3]
+    >>> b = [4, 5, 6]
+    >>> dot(a, b)
+    32
+
+    """
     xp = get_array_module(a, b)
     if xp.isscalar(a) or xp.isscalar(b):
         return a * b
