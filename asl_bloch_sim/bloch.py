@@ -28,8 +28,15 @@ def expand_dims_to(arr1, arr2, dimodifier=0):
         arr1 = xp.expand_dims(arr1, tuple(range(-arr2.ndim - dimodifier, 0)))
     return arr1
 
+def has_time_axis(arr, signal, axis=0):
+    xp = get_array_module(signal)
+    try:
+        return xp.shape(arr)[axis] == xp.shape(signal)[axis]
+    except IndexError:
+        return False
+
 def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity=1,
-                      rf_fm=0, axis=-1):
+                      rf_fm=0, time_axis=0, space_axis=-1):
     """
     Construct the magnetic field vector from the RF and gradient waveforms.
 
@@ -38,27 +45,38 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
     rf_am : ndarray
         RF amplitude waveform in Tesla.
     G : ndarray, optional
-        Gradient waveform in Tesla/m. Default is 0.
+        Gradient waveform in Tesla/m. The length of the
+        time axis should match `rf_am`. Default is 0.
     position : ndarray, optional
-        Spatial position vector in meters. Default is 0.
+        Spatial position vector in meters. Shape should match `G`.
+        Default is 0.
     off_resonance : float, optional
         Off-resonance frequency in Hz. Default is 0.
     B1_sensitivity : float or ndarray, optional
         B1 sensitivity factor. Default is 1.
     rf_fm : ndarray, optional
         RF frequency waveform in Hz. Default is 0.
-    axis : int, optional
+    time_axis : int, optional
+        Axis along the input arrays which represents the time axis. Default is 0.
+    space_axis : int, optional
         Axis along the field array which represents the 2D or 3D spatial field vector.
         Also used for the dot product between gradient and position vectors. Default is -1.
 
     Returns
     -------
-    ndarray
-        Magnetic field vector in Tesla. Shape is extended from rf_am by G * position,
-        off_resonance, B1_sensitivity, and coordinates for the spatial axis.
+    B_eff : ndarray
+        Magnetic field vector in Tesla. Shape is extended from rf_am by :math:`G \\cdot position`,
+        off_resonance, B1_sensitivity, and coordinates for the spatial axis. Explicitly, when space_axis=-1,
+        the shape of the magnetic field vector is (time, ..., dB0, dB1, 3), where time is `len(rf_am)`,
+        `dB0 = len(off_resonance)`, `dB1 = len(B1_sensitivity)`, `3` is the spatial axis (x, y, z), and
+        `...` represents any extra dimensions in `rf_am` (for example to parametrize bandwidth), followed
+        by any extra dimensions in `dot(G, position, space_axis)` (for example to parametrize spin motion).
 
     Notes
     -----
+    As this function uses numpy-style broadcasting, the input arrays should have unique shapes, for example,
+    parametrized dimensions like `len(off_resonance)` should NOT match `len(rf_am)`, the number of time steps.
+
     The magnetic field vector is computed as:
 
     .. math::
@@ -69,7 +87,7 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
 
     where :math:`B_x`, :math:`B_y`, and :math:`B_z` are the magnetic field components,
     :math:`\\Delta B_1` is the unitless B1 sensitivity factor, :math:`RF_{AM}` is the RF amplitude modulation waveform in Tesla,
-    :math:`G` is the gradient waveform in Tesla/m, :math:`r` is the spatial position waveform in meters,
+    :math:`G` is the gradient waveform in Tesla/m, :math:`r` is the spin's spatial position waveform in meters,
     :math:`RF_{FM}` is the RF frequency modulation waveform in Hz, :math:`\\gammabar` is the reduced gyromagnetic ratio in Hz/T,
     and :math:`\\Delta f` is the off-resonance frequency in Hz.
 
@@ -79,14 +97,14 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
     dBz = off_resonance / GAMMA_BAR # T
     rf_fm = expand_dims_to(rf_fm, dBz)
     B1z = rf_fm / GAMMA_BAR # T
-    Bz_pos = expand_dims_to(dot(G, position, axis=axis), dBz) # T
+    Bz_pos = expand_dims_to(dot(G, position, axis=space_axis), dBz) # T
     Bz = expand_dims_to(Bz_pos + dBz + B1z, B1_sensitivity).astype(xp.float32) # T
 
-    rf_am = expand_dims_to(rf_am, Bz, dimodifier=-1) # -1 dim for time axis
+    rf_am = expand_dims_to(rf_am, Bz, dimodifier=-int(has_time_axis(Bz, rf_am, time_axis))) # -1 dim to dedupe time axis
     rf_am = (B1_sensitivity * rf_am).astype(xp.complex64) # T
     Bx, By = rf_am.real, rf_am.imag
 
-    B = xp.moveaxis(xp.broadcast_arrays(Bx, By, Bz), 0, axis)
+    B = xp.moveaxis(xp.broadcast_arrays(Bx, By, Bz), 0, space_axis)
 
     from asl_bloch_sim import xp # use module level library (even if RF array was numpy)
     return xp.asarray(B)
