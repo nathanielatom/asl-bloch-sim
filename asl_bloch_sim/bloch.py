@@ -57,20 +57,36 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
         Magnetic field vector in Tesla. Shape is extended from rf_am by G * position,
         off_resonance, B1_sensitivity, and coordinates for the spatial axis.
 
+    Notes
+    -----
+    The magnetic field vector is computed as:
+
+    .. math::
+
+        B_x = \\Delta B_1 \\Re{RF_{AM}}
+        B_y = \\Delta B_1 \\Im{RF_{AM}}
+        B_z = G \\cdot r + \\frac{RF_{FM}}{\\gammabar} + \\frac{\\Delta f}{\\gammabar}
+
+    where :math:`B_x`, :math:`B_y`, and :math:`B_z` are the magnetic field components,
+    :math:`\\Delta B_1` is the unitless B1 sensitivity factor, :math:`RF_{AM}` is the RF amplitude modulation waveform in Tesla,
+    :math:`G` is the gradient waveform in Tesla/m, :math:`r` is the spatial position waveform in meters,
+    :math:`RF_{FM}` is the RF frequency modulation waveform in Hz, :math:`\\gammabar` is the reduced gyromagnetic ratio in Hz/T,
+    and :math:`\\Delta f` is the off-resonance frequency in Hz.
+
     """
     xp = get_array_module(rf_am)
 
     dBz = off_resonance / GAMMA_BAR # T
-    rf_am = expand_dims_to(expand_dims_to(rf_am, dBz), B1_sensitivity)
+    rf_fm = expand_dims_to(rf_fm, dBz)
+    B1z = rf_fm / GAMMA_BAR # T
+    Bz_pos = expand_dims_to(dot(G, position, axis=axis), dBz) # T
+    Bz = expand_dims_to(Bz_pos + dBz + B1z, B1_sensitivity).astype(xp.float32) # T
+
+    rf_am = expand_dims_to(rf_am, Bz, dimodifier=-1) # -1 dim for time axis
     rf_am = (B1_sensitivity * rf_am).astype(xp.complex64) # T
     Bx, By = rf_am.real, rf_am.imag
 
-    rf_fm = expand_dims_to(rf_fm, dBz)
-    B1z = rf_fm / GAMMA_BAR # T
-    Bz_pos = expand_dims_to(dot(G, position, axis=axis), dBz)
-    Bz = expand_dims_to(Bz_pos + dBz + B1z, B1_sensitivity)
-
-    B = xp.moveaxis(xp.asarray(xp.broadcast_arrays(Bx, By, Bz), dtype=xp.float32), 0, axis)
+    B = xp.moveaxis(xp.broadcast_arrays(Bx, By, Bz), 0, axis)
 
     from asl_bloch_sim import xp # use module level library (even if RF array was numpy)
     return xp.asarray(B)
@@ -162,6 +178,11 @@ def rodrigues_rotation(v, k, theta, *, normalize=True, axis=-1):
     array([0., 1., 0.])
 
     """
+    # once https://github.com/cupy/cupy/issues/7801 is resolved, we can use
+    # https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.from_rotvec.html
+    # flatten extra dimensions to (N, 3), from scipy.spatial.transform import Rotation
+    # Rotation.from_rotvec(k * theta).apply(v), unflatten extra dimensions
+
     xp = get_array_module(v, k, theta)
     if normalize:
         k = k / xp.linalg.norm(k, axis=axis, keepdims=True)
@@ -207,12 +228,13 @@ def unit_field_and_angle(B_field, dt, *, tol=1e-14, axis=-1):
     b = B / |B|
     ang = -γ * |B| * dt
 
-    where |B| is the magnitude of the field vector, γ is the gyromagnetic
-    ratio, and dt is the time step.
+    where |B| is the magnitude of the field vector in Tesla,
+    γ is the gyromagnetic ratio in rads/s/T, and dt is the
+    time step in seconds.
 
     """
     xp = get_array_module(B_field)
-    # Set length/magnitude of B
+    # Calc the magnitude of B
     B_length = xp.linalg.norm(B_field, axis=axis, keepdims=True)
     mask = B_length <= tol
     B_length[mask] = tol
@@ -269,6 +291,26 @@ def relax(magnetization, T1, T2, dt, *, M0=(0, 0, 1),
         Updated magnetization vector. The shapes of T1 and T2 are prefixed to the
         shape of the magnetization array if not already present.
 
+    Raises
+    ------
+    ValueError: If the length of M0 is not equal to the length of the spatial axis
+        of the magnetization array.
+
+    Notes
+    -----
+    The relaxation is computed as:
+
+    .. math::
+
+        \\vec{M}_{\\text{relaxed}} = \\vec{M}_{\\text{stressed}} \\cdot \\left[1 - \\frac{\\Delta t}{T_2}, 1 - \\frac{\\Delta t}{T_2}, 1 - \\frac{\\Delta t}{T_1} \\right]^T + \\vec{M_0} \\left(\\frac{\\Delta t}{T_1} \\right)
+
+    where :math:`\\vec{M}_{\\text{relaxed}}` is the relaxed magnetization vector,
+    :math:`\\vec{M}_{\\text{stressed}}` is the input magnetization vector,
+    :math:`\\vec{M_0}` is the initial magnetization vector,
+    :math:`T_1` is the longitudinal relaxation time in seconds,
+    :math:`T_2` is the transverse relaxation time in seconds,
+    and :math:`\\Delta t` is the time step in seconds.
+
     Examples
     --------
     # One line to simulate a relaxation process for 5000 time steps with 3000 parameter combos!
@@ -315,6 +357,9 @@ def relax(magnetization, T1, T2, dt, *, M0=(0, 0, 1),
     return magnetization * relaxation_decay.reshape(outshape) + rise
 
 def sim(B_field, T1, T2, duration, dt, *, init_mag=(0, 0, 1), **kwargs):
+    # TODO: construct B_field on the fly (at each time step to save memory)
+    # and or precalc b and theta to save processing time in loop
+    # b, theta = bloch.unit_field_and_angle(B, dt)
     mag = init_mag
     mags = xp.empty_like(B_field)
     for step in progress_bar(range(round(duration / dt))):
