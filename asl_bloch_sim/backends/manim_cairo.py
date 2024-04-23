@@ -23,7 +23,7 @@ def put_start_and_end_on(arrow, start, end, *, animate=False, small=1e-2):
         arrow.cone.base_circle.set_opacity(0)
         return hawkeye.put_start_and_end_on(start, end)
 
-class ArrowAnimation(ThreeDScene):
+class BlochScene(ThreeDScene):
 
     def set_data(self, magnetization, B_field, time_increments, speed=None,
                  traces=('magnetization', 'B_field_projection')):
@@ -52,12 +52,17 @@ class ArrowAnimation(ThreeDScene):
         .. code-block:: python
 
             import numpy as np
+            from asl_bloch_sim.backends.manim_cairo import BlochScene
+            from asl_bloch_sim.animation import rescale_Beff
             sample_rate = 10 # Hz
             time = np.arange(0, 3, 1/sample_rate)
             time_increments = np.gradient(time)
-            B_eff = np.repeat(np.array([[0, -1, 0]]), time.size, axis=0)
+            B_eff = np.repeat(np.array([[0, -1, 0]]), time.size, axis=0) * 1e-6 # T
             period = 10 # s
             mag = np.array([np.sin(2 * np.pi * time / period), np.zeros_like(time), np.cos(2 * np.pi * time / period)]).T
+            scene = BlochScene()
+            scene.set_data(mag, rescale_Beff(B_eff), time_increments)
+            scene.render()
 
         """
         self.magnetization = magnetization

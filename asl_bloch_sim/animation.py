@@ -19,16 +19,17 @@ def bloch_sphere(magnetization, B_field=None, time_increments=0.1, speed=None,
         from tqdm.auto import tqdm
         import manim.scene.scene
         manim.scene.scene.tqdm = tqdm
+
         from manim import config, tempconfig
-        from asl_bloch_sim.test_arrow import ArrowAnimation
+        from asl_bloch_sim.backends.manim_cairo import BlochScene
 
         kwargs['quality'] = quality
         kwargs['progress_bar'] = progress_bar
         kwargs['max_files_cached'] = max_files_cached
         with tempconfig(kwargs):
-            anim = ArrowAnimation()
-            anim.set_data(magnetization, rescale_Beff(B_field), time_increments, speed, traces)
-            anim.render(preview and not 'notebook' in SHELL)
+            scene = BlochScene()
+            scene.set_data(magnetization, rescale_Beff(B_field), time_increments, speed, traces)
+            scene.render(preview and not 'notebook' in SHELL)
 
             if preview and 'notebook' in SHELL:
                 vid = Video(config['output_file'], embed=True,

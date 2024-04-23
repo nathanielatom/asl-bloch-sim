@@ -21,6 +21,7 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest"]
 gpu = ["cupy-cuda12x!=13.0.0"]
+animation = ["manim"]
 
 [tool.setuptools]
 py-modules = ["asl_bloch_sim"]
