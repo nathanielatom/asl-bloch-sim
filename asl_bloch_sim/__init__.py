@@ -1,8 +1,7 @@
 import os as _os
 import warnings as _warnings
 
-import tqdm
-import tqdm.notebook
+from tqdm.auto import tqdm
 
 __version__ = "0.0.1"
 
@@ -52,5 +51,5 @@ def _get_shell_type():
 SHELL = _get_shell_type()
 SHELL_TYPES = {'python', 'ipython', 'jupyter notebook', 'colaboratory notebook'}
 # convenience and user code readability
-progress_bar = tqdm.tqdm if SHELL != 'jupyter notebook' else tqdm.notebook.tqdm
-progress_print = tqdm.tqdm.write
+progress_bar = tqdm
+progress_print = tqdm.write

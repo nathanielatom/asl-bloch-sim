@@ -3,6 +3,9 @@ project_figures/*.png
 .DS_Store
 media/
 
+# Data
+*.npz
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
