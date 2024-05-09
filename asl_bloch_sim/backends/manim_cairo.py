@@ -1,3 +1,5 @@
+from itertools import repeat
+
 from manim import *
 import numpy as np
 
@@ -26,7 +28,7 @@ def put_start_and_end_on(arrow, start, end, *, animate=False, small=1e-2):
 class BlochScene(ThreeDScene):
 
     def set_data(self, magnetization, B_field, time_increments, speed=None,
-                 traces=('magnetization', 'B_field_projection')):
+                 traces=('magnetization', 'B_field_projection'), prologue=True):
         """
         Set the data for the Bloch sphere animation.
 
@@ -70,6 +72,7 @@ class BlochScene(ThreeDScene):
         self.time_increments = time_increments
         self.speed = speed
         self.traces = traces
+        self.prologue = prologue
 
     def construct(self):
         start_point = np.array([0, 0, 0])
@@ -150,27 +153,34 @@ class BlochScene(ThreeDScene):
         self.set_camera_orientation(zoom=3, phi=70 * DEGREES, theta=-70 * DEGREES)
         self.begin_ambient_camera_rotation(rate=0.01)
 
-        self.play(FadeIn(axes), FadeIn(sphere), FadeIn(sphere_axes), run_time=2)
-        self.play(Write(x_label), Write(y_label), Write(z_label), run_time=1)
-        self.wait(1)
-        self.play(Create(mag_arrow), run_time=0.5)
-        self.play(Write(mag_text), run_time=1)
-        if self.B_field is not None:
+        if self.prologue:
+            self.play(FadeIn(axes), FadeIn(sphere), FadeIn(sphere_axes), run_time=2)
+            self.play(Write(x_label), Write(y_label), Write(z_label), run_time=1)
             self.wait(1)
-            self.play(Create(field_arrow), run_time=0.5)
-            self.play(Write(field_text), run_time=1)
+            self.play(Create(mag_arrow), run_time=0.5)
+            self.play(Write(mag_text), run_time=1)
+            if self.B_field is not None:
+                self.wait(1)
+                self.play(Create(field_arrow), run_time=0.5)
+                self.play(Write(field_text), run_time=1)
+                self.wait(1)
+                self.play(Write(scale_text), run_time=1)
             self.wait(1)
-            self.play(Write(scale_text), run_time=1)
-        self.wait(1)
-        if self.speed is not None:
-            self.play(Write(speed_text), run_time=1)
-        self.wait(2)
+            if self.speed is not None:
+                self.play(Write(speed_text), run_time=1)
+            self.wait(2)
+        else:
+            self.add(axes, sphere, sphere_axes, x_label, y_label, z_label, mag_arrow, mag_text)
+            if self.B_field is not None:
+                self.add(field_arrow, field_text, scale_text)
+            if self.speed is not None:
+                self.add(speed_text)
 
-        # Animate the movement of the mag_arrow
-        for dt, field, mag in zip(self.time_increments, self.B_field, self.magnetization):
+        Beff = self.B_field if self.B_field is not None else repeat(None, len(self.magnetization))
+        for dt, field, mag in zip(self.time_increments, Beff, self.magnetization):
             mag_arrow.direction = unit_vector(mag - start_point, fall_back=mag_arrow.direction)
             updates = [put_start_and_end_on(mag_arrow, start_point, mag, animate=True)]
-            if self.B_field is not None:
+            if field is not None:
                 field_arrow.direction = unit_vector(field - start_point, fall_back=field_arrow.direction)
                 updates.append(put_start_and_end_on(field_arrow, start_point, field, animate=True))
             self.play(*updates, rate_func=linear, run_time=dt)
