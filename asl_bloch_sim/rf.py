@@ -50,7 +50,7 @@ def sinc_pulse(flip_angle, duration, bandwidth, dt, phase_angle=0, window='hann'
 
     return B1 * pulse # Tesla
 
-def adiabaticity(pulse_am, pulse_fm, B0, dt):
+def adiabaticity(pulse_am, pulse_fm, dt):
     """
     Compute the adiabaticity of an RF pulse.
 
@@ -59,9 +59,7 @@ def adiabaticity(pulse_am, pulse_fm, B0, dt):
     pulse_am : ndarray
         Amplitude modulation waveform in Tesla.
     pulse_fm : ndarray
-        Frequency modulation waveform in Hz.
-    B0 : float
-        Static magnetic field in Tesla.
+        Frequency modulation waveform in Hz, relative to the Larmor frequency.
     dt : float
         Time step in seconds.
 
@@ -86,7 +84,7 @@ def adiabaticity(pulse_am, pulse_fm, B0, dt):
     time, the pulse is considered adiabatic.
 
     """
-    Bz_eff = B0 - pulse_fm / bloch.GAMMA_BAR
+    Bz_eff = pulse_fm / bloch.GAMMA_BAR
     return bloch.GAMMA * np.sqrt(pulse_am**2 + Bz_eff**2) / np.abs(np.gradient(np.arctan2(pulse_am, Bz_eff), dt))
 
 def adiabatic_pulse(flip_angle, duration, bandwidth, stretch, dt, amplitude=1e-5, type='sech'):

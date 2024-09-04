@@ -33,20 +33,28 @@ def downsample(time_signal, new_time_increment, duration='~20', mode='filter', *
         duration = float(duration[1:])
     factor = length * new_time_increment / duration
     if approx:
-        factor = round_divisor(length, factor)
+        if factor >= 1:
+            factor = round_divisor(length, factor)
+        else:
+            factor = 1 / round(1 / factor)
         duration = length * new_time_increment / factor
     # else use exact duration provided, must result in integer reduction factor and new shape
-    time_steps = np.arange(0, duration, new_time_increment)
-    if time_steps.size != (new_shape := length / factor) or (mode != 'fourier' and not factor.is_integer()):
+    time_steps = np.arange(0, duration, new_time_increment) # TODO: debug off-by-one error occasionally when upsampling
+    if time_steps.size != (new_shape := length / factor) or (mode != 'fourier' and factor >= 1 and not factor.is_integer()):
         message = f'Desired {duration=}, {new_time_increment=} are incompatible with {length=} and result in downsampling {factor=} and {new_shape=}, please adjust to ensure integers'
         raise ValueError(message)
     if mode == 'fourier':
         kwargs.setdefault('window', 'rect')
         resampled = sig.resample(time_signal, length / factor, axis=0, **kwargs)
     elif mode == 'filter':
+        up = 1 if factor >= 1 else round(1 / factor)
+        down = factor if factor >= 1 else 1
         kwargs.setdefault('padtype', 'line')
-        resampled = sig.resample_poly(time_signal, 1, factor, axis=0, **kwargs)
+        resampled = sig.resample_poly(time_signal, up, down, axis=0, **kwargs)
     elif mode == 'alias':
+        if factor < 1:
+            message = f'Aliasing mode is only possible for downsampling, got {factor=}'
+            raise ValueError(message)
         if kwargs:
             message = f'got unexpected keyword arguments {kwargs=}'
             raise ValueError(message)
@@ -57,7 +65,8 @@ def downsample(time_signal, new_time_increment, duration='~20', mode='filter', *
     return time_steps, resampled
 
 def speed(og_time_steps, new_time_steps):
-    return np.gradient(og_time_steps).mean() / np.gradient(new_time_steps).mean()
+    return (og_time_steps[-1] - og_time_steps[0]) / (new_time_steps[-1] - new_time_steps[0])
+    # return np.gradient(og_time_steps).mean() / np.gradient(new_time_steps).mean()
 
 def rescale_Beff(Beff, arrow_length=1):
     Beff = Beff * 1e6 # µT

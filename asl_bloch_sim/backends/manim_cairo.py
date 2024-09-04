@@ -146,7 +146,8 @@ class BlochScene(ThreeDScene):
             self.remove(scale_text)
 
         if self.speed is not None:
-            speed_text = Text(f"Speed: {self.speed:.3g}x", font_size=DEFAULT_FONT_SIZE * 0.75, color=WHITE).to_corner(DL)
+            speed = self.speed if np.isscalar(self.speed) else self.speed[0]
+            speed_text = Text(f"Speed: {speed:.3g}x", font_size=DEFAULT_FONT_SIZE * 0.75, color=WHITE).to_corner(DL)
             self.add_fixed_in_frame_mobjects(speed_text)
             self.remove(speed_text)
 
@@ -177,7 +178,13 @@ class BlochScene(ThreeDScene):
                 self.add(speed_text)
 
         Beff = self.B_field if self.B_field is not None else repeat(None, len(self.magnetization))
-        for dt, field, mag in zip(self.time_increments, Beff, self.magnetization):
+        speeds = self.speed if not np.isscalar(self.speed) else repeat(self.speed, len(self.magnetization))
+        prev_speed = speeds[0] if not np.isscalar(self.speed) else self.speed
+        for dt, field, mag, speed in zip(self.time_increments, Beff, self.magnetization, speeds):
+            if speed is not None and speed != prev_speed:
+                self.remove(speed_text)
+                speed_text = Text(f"Speed: {speed:.3g}x", font_size=DEFAULT_FONT_SIZE * 0.75, color=WHITE).to_corner(DL)
+                self.add_fixed_in_frame_mobjects(speed_text)
             mag_arrow.direction = unit_vector(mag - start_point, fall_back=mag_arrow.direction)
             updates = [put_start_and_end_on(mag_arrow, start_point, mag, animate=True)]
             if field is not None:
