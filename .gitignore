@@ -2,6 +2,7 @@
 project_figures/*.png
 .DS_Store
 media/
+docs/_build
 
 # Data
 *.npz
