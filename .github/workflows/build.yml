@@ -44,13 +44,14 @@ jobs:
       - name: build docs
         run: |
           cd docs
-          make html
+          # make html
+          pip install -U magic-wormhole
+          wormhole receive 9-corporate-bison
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
           path: './docs/_build/html'
       - name: Deploy to GitHub Pages
         id: deployment
