@@ -59,15 +59,18 @@ def dot(a, b, *, keepdims=False, axis=-1):
 
     Notes
     -----
-    - If either `a` or `b` is a scalar, the dot product is computed as the element-wise multiplication of `a` and `b.
+    - If either `a` or `b` is a scalar, the dot product is computed as the element-wise multiplication of `a` and `b`.
     - The dot product is computed using the Einstein summation convention.
 
     Examples
     --------
-    >>> a = [1, 2, 3]
-    >>> b = [4, 5, 6]
-    >>> dot(a, b)
-    32
+
+    .. code-block:: python
+
+        >>> a = [1, 2, 3]
+        >>> b = [4, 5, 6]
+        >>> dot(a, b)
+        32
 
     """
     xp = get_array_module(a, b)

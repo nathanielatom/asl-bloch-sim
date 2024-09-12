@@ -111,11 +111,12 @@ def unit_field_and_angle(B_field, dt, *, tol=1e-14, axis=-1):
     -----
     The unit field vector and rotation angle are computed as:
 
-    b = B / |B|
-    ang = -γ * |B| * dt
+    .. math::
+        \\vec{b} = \\frac{\\vec{B}}{|B|}
+        \\theta = -\\gamma |B| dt
 
-    where |B| is the magnitude of the field vector in Tesla,
-    γ is the gyromagnetic ratio in rads/s/T, and dt is the
+    where :math:`|B|` is the magnitude of the field vector in Tesla,
+    :math:`\\gamma` is the gyromagnetic ratio in rads/s/T, and :math:`dt` is the
     time step in seconds.
 
     """
@@ -134,6 +135,37 @@ def unit_field_and_angle(B_field, dt, *, tol=1e-14, axis=-1):
     return b_field, ang
 
 def precess(magnetization, B_field, dt, *, axis=-1, **kwargs):
+    """
+    Simulate the precession of the magnetization vector under the influence of the magnetic field.
+
+    This function simulates the precession of the magnetization vector according to the Bloch equations.
+    The precession is computed using the Rodrigues' rotation formula.
+
+    Parameters
+    ----------
+    magnetization : ndarray
+        The initial magnetization vector.
+    B_field : ndarray
+        The magnetic field vector in Tesla.
+    dt : float
+        The time step in seconds.
+    axis : int, optional
+        The spatial axis along which precession takes place. Default is -1.
+    **kwargs : dict
+        Additional keyword arguments to pass to the `unit_field_and_angle` function.
+
+    Returns
+    -------
+    ndarray
+        The magnetization vector after precession.
+
+    See Also
+    --------
+    unit_field_and_angle
+    utils.rodrigues_rotation
+    relax
+
+    """
     magnetization = xp.asarray(magnetization, dtype=xp.float32)
     for dim in range(B_field.ndim - magnetization.ndim):
         magnetization = xp.expand_dims(magnetization, axis=0 if axis == -1 or axis == B_field.ndim - 1 else -1)
@@ -199,17 +231,20 @@ def relax(magnetization, T1, T2, dt, *, M0=(0, 0, 1),
 
     Examples
     --------
-    # One line to simulate a relaxation process for 5000 time steps with 3000 parameter combos!
-    import numpy as np
-    from asl_bloch_sim import bloch
 
-    dt = 0.001 # seconds
-    duration = 5 # seconds
-    T1 = np.linspace(0.3, 2.3, 20) # seconds
-    T2 = np.linspace(0.05, 1.1, 30) # seconds
-    mag = np.random.random((5, 3)) # last axis is the spatial axis
-    mags = np.array([mag := bloch.relax(mag, T1, T2, dt) for _ in range(round(duration / dt))])
-    mags.shape # (5000, 20, 30, 5, 3)
+    .. code-block:: python
+
+        # One line to simulate a relaxation process for 5000 time steps with 3000 parameter combos!
+        import numpy as np
+        from asl_bloch_sim import bloch
+
+        dt = 0.001 # seconds
+        duration = 5 # seconds
+        T1 = np.linspace(0.3, 2.3, 20) # seconds
+        T2 = np.linspace(0.05, 1.1, 30) # seconds
+        mag = np.random.random((5, 3)) # last axis is the spatial axis
+        mags = np.array([mag := bloch.relax(mag, T1, T2, dt) for _ in range(round(duration / dt))])
+        mags.shape # (5000, 20, 30, 5, 3)
 
     """
     xp = get_array_module(magnetization, T1, T2)
