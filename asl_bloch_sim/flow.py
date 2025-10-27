@@ -297,7 +297,7 @@ def holdsworth_cca(start=0, stop=2, num=1000,
     spline_model = CubicSpline(knotx, naughty, bc_type='periodic')
     time_steps = np.linspace(start, stop, num)
     dt = time_steps[1] - time_steps[0]
-    velocity_waveform = utils.binormalize(spline_model(time_steps), diastolic_velocity, systolic_velocity)
+    velocity_waveform = utils.binormalize(spline_model(time_steps).astype(np.float32), diastolic_velocity, systolic_velocity)
     velocity_waveform[:, utils.expand_dims_to(diastolic_velocity, systolic_velocity) > systolic_velocity] = np.nan
     if cross_section is not None:
         velocity_waveform = utils.expand_dims_to(velocity_waveform, cross_section) * cross_section
