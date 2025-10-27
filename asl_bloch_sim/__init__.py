@@ -45,11 +45,9 @@ def _get_shell_type():
         return shell_types[str(type(get_ipython()))]
     except (NameError, KeyError):
         pass
-
     return 'python'
 
 SHELL = _get_shell_type()
 SHELL_TYPES = {'python', 'ipython', 'jupyter notebook', 'colaboratory notebook'}
 # convenience and user code readability
 progress_bar = tqdm
-progress_print = tqdm.write

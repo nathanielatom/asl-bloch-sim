@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.signal as sig
 
-from asl_bloch_sim import bloch
+from asl_bloch_sim import bloch, utils
 
 def sinc_pulse(flip_angle, duration, bandwidth, dt, phase_angle=0, window='hann'):
     """
@@ -44,7 +44,6 @@ def sinc_pulse(flip_angle, duration, bandwidth, dt, phase_angle=0, window='hann'
     time_bandwidth_product = duration * bandwidth
     x = np.linspace(-time_bandwidth_product / 2, time_bandwidth_product / 2,
                     round(duration / dt), endpoint=False)
-
     pulse = sig.get_window(window, len(x)) * np.sinc(x)
     B1 = np.exp(1j * theta) * alpha / (np.trapz(pulse, dx=dt) * bloch.GAMMA)
 
@@ -123,6 +122,14 @@ def adiabatic_pulse(flip_angle, duration, bandwidth, stretch, dt, amplitude=1e-5
     """
     # TODO: implement flip angle for adiabadic pulse
     # pulse_am[-1] / pulse_fm[-1] = ratio
+
+    # TODO: implement phase for adiabadic pulse, to bring magnetization
+    # to any target position in the Bloch sphere
+
+    # TODO: implement spatially selective RF pulses and compare TimeSLIP pencil beam
+    # pulse to single vessel selective PCASL (use Gx and Gy and increment RF phase
+    # accordingly for both labelling plane and vessel location)
+
     ratio = np.tan(np.deg2rad(flip_angle)) / bloch.GAMMA_BAR
 
     time_bandwidth_product = duration * bandwidth
@@ -167,5 +174,5 @@ def extend(pulse, duration, dt, axis=0):
     shap = list(np.shape(pulse))
     num_zero = round(duration / dt) - shap[axis]
     shap[axis] = num_zero
-    zero = np.broadcast_to(bloch.expand_dims_to(np.zeros(num_zero), pulse, dimodifier=-1), shap)
+    zero = np.broadcast_to(utils.expand_dims_to(np.zeros(num_zero), pulse, dimodifier=-1), shap)
     return np.append(pulse, zero, axis=axis)

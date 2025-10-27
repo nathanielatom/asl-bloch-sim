@@ -2,7 +2,7 @@ import numpy as np
 
 from asl_bloch_sim import xp, get_array_module
 
-def expand_dims_to(arr1, arr2, dimodifier=0):
+def expand_dims_to(arr1, arr2, dimodifier=0, collapse_matching=False):
     """
     Expand dimensions of arr1 to be broadcastable with arr2.
 
@@ -23,6 +23,9 @@ def expand_dims_to(arr1, arr2, dimodifier=0):
     """
     xp = get_array_module(arr1, arr2)
     if not xp.isscalar(arr2):
+        if collapse_matching:
+            rolling_equal_dims = [arr1.shape[-ind:] == arr2.shape[:ind] for ind in range(1, len(arr2.shape) + 1)].index(True) + 1
+            dimodifier =- rolling_equal_dims
         arr1 = xp.expand_dims(arr1, tuple(range(-arr2.ndim - dimodifier, 0)))
     return arr1
 
@@ -60,7 +63,6 @@ def dot(a, b, *, keepdims=False, axis=-1):
     Notes
     -----
     - If either `a` or `b` is a scalar, the dot product is computed as the element-wise multiplication of `a` and `b`.
-    - The dot product is computed using the Einstein summation convention.
 
     Examples
     --------
@@ -133,12 +135,14 @@ def rodrigues_rotation(v, k, theta, *, normalize=True, axis=-1):
         k = k / xp.linalg.norm(k, axis=axis, keepdims=True)
     sin_theta = xp.sin(theta)
     cos_theta = xp.cos(theta)
-    dot_kv = utils.dot(k, v, axis=axis, keepdims=True)
+    dot_kv = dot(k, v, axis=axis, keepdims=True)
     cross_kv = xp.cross(k, v, axis=axis)
     v_rot = v * cos_theta + cross_kv * sin_theta + k * dot_kv * (1 - cos_theta)
     return v_rot
 
 def binormalize(arr, min, max, axis=None):
+    min = expand_dims_to(min, max)
+    arr = expand_dims_to(arr, min)
     minarr = arr.min(axis=axis)
     return (arr - minarr) * (max - min) / (arr.max(axis=axis) - minarr) + min
 

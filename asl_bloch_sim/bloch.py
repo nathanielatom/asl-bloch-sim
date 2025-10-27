@@ -1,5 +1,5 @@
 from asl_bloch_sim import xp, get_array_module
-from asl_bloch_sim import progress_bar, progress_print
+from asl_bloch_sim import progress_bar
 from asl_bloch_sim import utils
 
 GAMMA_BAR = 42.5759e6 # Gyromagnetic ratio (Hz/T)
@@ -287,3 +287,81 @@ def sim(B_field, T1, T2, duration, dt, *, init_mag=(0, 0, 1), **kwargs):
         mag = relax(precess(mag, B_field[step], dt, **kwargs), T1, T2, dt)
         mags[step] = mag
     return mags
+
+def inverted_magnetization(magnetization, time, T1, position, magindex=-1, time_axis=0, space_axis=-1, M0=1):
+    """
+    Calculate labelling efficiency from final longitudinal magnetization at the end of the
+    simulation by correcting for the T1 decay experienced by the spin isochromat since
+    crossing the labelling plane :cite:`Dai2008`.
+
+    This provides a natural way to estimate the central tendency of the ringing/oscillatory magnetization
+    signal at the time of inversion.
+
+    Notes
+    -----
+    The longitudinal magnetization is corrected by:
+
+    .. math::
+
+        M_{inversion} = (M_{final} - M_0) \\exp\\left(\\frac{t_{final} - t_{inversion}}{T_1}\\right) + M_0
+
+    where:
+    - :math:`M_{inversion}` is the longitudinal magnetization resulting from inversion.
+    - :math:`M_{final}` is the longitudinal magnetization at the final time point.
+    - :math:`M_0` is the initial longitudinal magnetization.
+    - :math:`t_{final}` and :math:`t_{inversion}` are final and inversion times, respectively.
+    - :math:`T_1` is the longitudinal relaxation.
+
+    References
+    ----------
+    W. Dai, D. Garcia, C. de Bazelaire, and D. C. Alsop, "Continuous flow-driven inversion for arterial spin
+    labeling using pulsed radio frequency and gradient fields," Magnetic Resonance in Medicine, vol. 60,
+    pp. 1488-1497, Nov. 2008.
+    """
+    xp = get_array_module(magnetization, position)
+
+    if time_axis == 0 and space_axis == -1:
+        final_mag = magnetization[magindex, ..., -1]
+    else:
+        final_mag = xp.take(xp.take(magnetization, magindex, axis=time_axis), -1, axis=space_axis)
+    crossing = time[xp.abs(position).argmin(axis=time_axis)] # TODO should off reso crossing be modified?
+    time_since = utils.expand_dims_to(time[magindex] - crossing, final_mag, collapse_matching=True) # s
+    invert_mag = (final_mag - M0) * xp.exp(time_since / T1) + M0
+    return invert_mag
+
+def labelling_efficiency(long_mag_inverted, long_mag_control=1):
+    """
+    Compute the labeling efficiency from inverted and control longitudinal magnetizations.
+
+    Parameters
+    ----------
+    long_mag_inverted : array_like or float
+        Longitudinal magnetization measured in the inverted (label) condition. May be a scalar
+        or an array; if an array, it must be broadcastable with long_mag_control.
+    long_mag_control : array_like or float, optional
+        Longitudinal magnetization measured in the control condition (default: 1). May be a scalar
+        or an array; if an array, it must be broadcastable with long_mag_inverted.
+
+    Returns
+    -------
+    float or ndarray
+        The absolute labeling efficiency computed element-wise as
+            |long_mag_control - long_mag_inverted| / |2 * long_mag_control|.
+        The return has the same shape as the broadcasted inputs. For physically meaningful
+        inputs, values typically lie in [0, 1].
+
+    Notes
+    -----
+    - If long_mag_control is zero, the result is undefined (division by zero). When using NumPy,
+      this will produce inf or nan values and may emit a runtime warning.
+    - This function does not validate input types beyond relying on NumPy broadcasting semantics;
+      pass numeric scalars or array-like objects.
+
+    Examples
+    --------
+    >>> labelling_efficiency(0.2)
+    0.4
+    >>> labelling_efficiency(np.array([0.9, 0.8]))
+    array([0.05, 0.1])
+    """
+    return xp.abs(long_mag_control - long_mag_inverted) / xp.abs(2 * long_mag_control)

@@ -7,6 +7,7 @@ docs/_generated
 
 # Data
 *.npz
+*.seq
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

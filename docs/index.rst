@@ -16,16 +16,26 @@ Features
 --------
 
 - Simulate the full time-evolution of the magnetization following an arbitrary pulse sequence
+- Avoids the hard pulse approximation, constructing all B-field components from RF and gradient waveforms along with off-resonance effects
 - Uses numpy-style broadcasting to effectively run up to millions of Bloch simulations in parallel
 - GPU acceleration using CuPy, with CPU fallback, and fully device-agnostic code
-- Visualise the effect of whole parameter grids on magnetization results using Bokeh
+- Visualise the effect on magnetization of whole parameter grids using Bokeh
 - Animations of the magnetization dynamics in 3D on the Bloch Sphere using Manim
+
+ASL Features
+------------
+
+- Simulate PASL sequences using adiabatic pulses
+- Simulate CASL with constant concurrent RF and gradients
+- Simulate PCASL with RF sinc pulses and gradients
+- Use arbitrary flow trajectories to simulate the effect of pulsatile blood flow
 
 Example
 -------
 
 Pulsed ASL (PASL) uses an adiabatic pulse to label a slab of blood in one go. Here's an
-animation of an example adiabatic pulse:
+animation on the Bloch sphere of an example adiabatic pulse in a frame rotating at the
+instantaneous frequency of the pulse (not the constant Larmor frequency):
 
 .. video:: _static/BlochScene_PASL.mp4
     :width: 700
