@@ -304,6 +304,9 @@ def holdsworth_cca(start=0, stop=2, num=1000,
     return time_steps, velocity_waveform, integrate_trajectory(velocity_waveform, dt=dt, axis=0, **kwargs)
 
 def speed_across_vessel(normalized=False, num=1000, time=0, R=0.003, P=13330, N=4, f=1/0.917, mu=3.5e-3, rho=1060):
+    ### TODO: test hypothesis that increasing RF bandwidth increases labelling plane thickness
+    # which helps efficiency for fast flowing AND off-resonance spins; go full Womersley
+
     P0 = P / 2 # P/2, P, P/2, P/4, ... # relative pressure gradient coefficients
     r = utils.expand_dims_to(np.linspace(0, R, num), time)
     a = np.sqrt(2 * np.pi * f * rho / mu) * R # Womersley number ~4.3 in CCA system makes sense
