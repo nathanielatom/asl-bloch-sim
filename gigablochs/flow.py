@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.signal as sig
-from scipy import special as spec
-from scipy.interpolate import CubicSpline
-from scipy.integrate import simpson
+import scipy.special as spec
+import scipy.interpolate as interp
+import scipy.integrate as int
 
-from asl_bloch_sim import utils
+from gigablochs import utils
 
 def integrate_trajectory(velocity_waveform, dt, position_offset=0, axis=-1):
     """
@@ -111,7 +111,7 @@ def half_sin(start=0, stop=2, num=1000, interbeat_interval=0.75,
         from bokeh.io import output_notebook
         output_notebook()
 
-        from asl_bloch_sim import flow
+        from gigablochs import flow
 
         systolic_velocities = np.linspace(0.01, 1, 50)[:, np.newaxis]
         time, velocity, position = flow.half_sin(systolic_velocity=systolic_velocities, phase=np.pi/8)
@@ -188,7 +188,7 @@ def exp_decay_train(start=0, stop=2, num=1000, interbeat_interval=0.917,
         from bokeh.io import output_notebook
         output_notebook()
 
-        from asl_bloch_sim import flow
+        from gigablochs import flow
 
         time, velocity, position = flow.exp_decay_train()
 
@@ -272,7 +272,7 @@ def holdsworth_cca(start=0, stop=2, num=1000,
         from bokeh.io import output_notebook
         output_notebook()
 
-        from asl_bloch_sim import flow
+        from gigablochs import flow
 
         time, velocity, position = flow.holdsworth_cca(diastolic_velocity=0.12)
 
@@ -294,7 +294,7 @@ def holdsworth_cca(start=0, stop=2, num=1000,
     knotx.sort()
     knotx *= interbeat_interval / knotx[-1]
     naughty = naughty / 100 # cm/s to m/s
-    spline_model = CubicSpline(knotx, naughty, bc_type='periodic')
+    spline_model = interp.CubicSpline(knotx, naughty, bc_type='periodic')
     time_steps = np.linspace(start, stop, num)
     dt = time_steps[1] - time_steps[0]
     velocity_waveform = utils.binormalize(spline_model(time_steps).astype(np.float32), diastolic_velocity, systolic_velocity)
@@ -325,4 +325,4 @@ def speed_across_vessel(normalized=False, num=1000, time=0, R=0.003, P=13330, N=
 def integrate_across_vessel(radial, profile, axis=-1):
     circumference = 2 * np.pi * np.moveaxis(utils.expand_dims_to(radial, profile, dimodifier=-1), 0, axis)
     area = np.pi * radial.max() ** 2
-    return simpson(circumference * profile, radial, axis=axis) / area
+    return int.simpson(circumference * profile, radial, axis=axis) / area

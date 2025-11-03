@@ -1,6 +1,6 @@
-from asl_bloch_sim import xp, get_array_module
-from asl_bloch_sim import progress_bar
-from asl_bloch_sim import utils
+from gigablochs import xp, get_array_module
+from gigablochs import progress_bar
+from gigablochs import utils
 
 GAMMA_BAR = 42.5759e6 # Gyromagnetic ratio (Hz/T)
 GAMMA = 2 * xp.pi * GAMMA_BAR # Gyromagnetic ratio (rads/T/s)
@@ -76,7 +76,7 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
 
     B = xp.moveaxis(xp.broadcast_arrays(Bx, By, Bz), 0, space_axis)
 
-    from asl_bloch_sim import xp # use module level library (even if RF array was numpy)
+    from gigablochs import xp # use module level library (even if RF array was numpy)
     return xp.asarray(B)
 
 def unit_field_and_angle(B_field, dt, *, tol=1e-14, axis=-1):
@@ -236,7 +236,7 @@ def relax(magnetization, T1, T2, dt, *, M0=(0, 0, 1),
 
         # One line to simulate a relaxation process for 5000 time steps with 3000 parameter combos!
         import numpy as np
-        from asl_bloch_sim import bloch
+        from gigablochs import bloch
 
         dt = 0.001 # seconds
         duration = 5 # seconds

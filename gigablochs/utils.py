@@ -1,6 +1,6 @@
 import numpy as np
 
-from asl_bloch_sim import xp, get_array_module
+from gigablochs import xp, get_array_module
 
 def expand_dims_to(arr1, arr2, dimodifier=0, collapse_matching=False):
     """
@@ -117,7 +117,7 @@ def rodrigues_rotation(v, k, theta, *, normalize=True, axis=-1):
     Examples
     --------
     >>> import numpy as np
-    >>> from asl_bloch_sim import bloch
+    >>> from gigablochs import bloch
     >>> v = np.array([1, 0, 0])
     >>> k = np.array([0, 0, 1])
     >>> theta = np.pi / 2

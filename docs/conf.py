@@ -6,10 +6,10 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'asl_bloch_sim'
-copyright = '2024, Adam Suban-Loewen'
+project = 'gigablochs'
+copyright = '2025, Adam Suban-Loewen'
 author = 'Adam Suban-Loewen'
-release = '0.0.1'
+release = '0.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -37,6 +37,7 @@ intersphinx_mapping = {
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
     'bokeh': ('https://docs.bokeh.org/en/latest/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
+    'manim': ('https://docs.manim.community/en/stable/', None),
 }
 
 bibtex_bibfiles = ['references.bib']

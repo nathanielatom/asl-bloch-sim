@@ -54,8 +54,8 @@ class BlochScene(ThreeDScene):
         .. code-block:: python
 
             import numpy as np
-            from asl_bloch_sim.backends.manim_cairo import BlochScene
-            from asl_bloch_sim.animation import rescale_Beff
+            from gigablochs.backends.manim_cairo import BlochScene
+            from gigablochs.animation import rescale_Beff
             sample_rate = 10 # Hz
             time = np.arange(0, 3, 1/sample_rate)
             time_increments = np.gradient(time)

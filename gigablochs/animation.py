@@ -2,7 +2,7 @@ import numpy as np
 import scipy.signal as sig
 from sympy.ntheory import divisors
 
-from asl_bloch_sim import SHELL
+from gigablochs import SHELL
 if 'notebook' in SHELL:
     from IPython.display import Video, display
 
@@ -64,9 +64,8 @@ def downsample(time_signal, new_time_increment, duration='~20', mode='filter', *
         raise ValueError(message)
     return time_steps, resampled
 
-def speed(og_time_steps, new_time_steps):
+def constant_speed(og_time_steps, new_time_steps):
     return (og_time_steps[-1] - og_time_steps[0]) / (new_time_steps[-1] - new_time_steps[0])
-    # return np.gradient(og_time_steps).mean() / np.gradient(new_time_steps).mean()
 
 def rescale_Beff(Beff, arrow_length=1):
     Beff = Beff * 1e6 # µT
@@ -77,6 +76,73 @@ def bloch_sphere(magnetization, B_field=None, time_increments=0.1, speed=None,
                  traces=('magnetization', 'B_field_projection'),
                  engine='manim-cairo', prologue=True, preview=True, quality='low_quality',
                  progress_bar='display', max_files_cached=1000, max_width=85, **kwargs):
+    """
+    Animate magnetization and B-field vectors on a Bloch sphere.
+
+    This function creates a 3D animation of magnetization evolving on the Bloch sphere,
+    optionally showing the magnetic field and various traces.
+
+    Parameters
+    ----------
+    magnetization : array_like
+        Magnetization vectors to animate. Should be an array of shape (N, 3) where N is
+        the number of time points and the last dimension contains the (x, y, z) components.
+    B_field : array_like, optional
+        Magnetic field vectors corresponding to the magnetization. Should have the same shape
+        as magnetization. If provided, the field will be rescaled.
+        Default is None, and no field vector is displayed.
+    time_increments : float or array_like, optional
+        Time increment(s) between consecutive frames. If scalar, the same increment is used
+        for all time points. If array, should match the time dimension of magnetization.
+        Default is 0.1.
+    speed : float or array_like, optional
+        Playback speed multiplier relative to real time, for informational display only.
+        Default is None.
+    traces : tuple of str, optional
+        Trace types to display in the animation. Traces are either the projection of
+        arrow tips onto the surface of the Bloch Sphere (ending in `_projection`) or the
+        3D historical trajectory of the arrow tips in space, which can be useful to show
+        when a vector has a smaller magnitude. Options include 'magnetization', 'B_field',
+        and their '_projection's. Default is ('magnetization', 'B_field_projection').
+    engine : str, optional
+        Animation engine to use. Currently only 'manim-cairo' is supported.
+        Default is 'manim-cairo'.
+    prologue : bool, optional
+        Whether to include a prologue sequence in the animation which displays the definition
+        of magnetization and B-field vectors, along with the max B-field amplitude and animaton
+        speed relative to real time. Default is True.
+    preview : bool, optional
+        Whether to preview the animation after rendering. When running in a Jupyter notebook
+        environment, the animation is embedded and displayed as output. Default is True.
+    quality : str, optional
+        Rendering quality. Options include 'low_quality', 'medium_quality', 'high_quality',
+        etc. Default is 'low_quality' since it takes significantly less time to render. Once you
+        are happy with the animation, you can re-render at higher quality for hours to produce
+        high definition production quality visuals.
+    progress_bar : str, optional
+        Progress bar display mode. Default is 'display'.
+    max_files_cached : int, optional
+        Maximum number of cached files for the rendering engine. Default is 1000 as there's many
+        little files for each rotation time step.
+    max_width : int, optional
+        Maximum width percentage for video display in notebooks. Default is 85.
+    **kwargs : dict, optional
+        Additional keyword arguments passed to the manim configuration.
+
+    Notes
+    -----
+    Raw Bloch simulation time history signals can be quite large, so consider downsampling the
+    magnetization and B-field signals before passing to this function, but be wary to preserve
+    the key frequency content of the signal and avoid downsampling too far - always inspect
+    your data.
+
+    See Also
+    --------
+    manim : Manim animation library.
+    downsample : Resample time-domain signals via Fourier or filtering methods.
+    gigablochs.backends.manim_cairo.BlochScene : Manim Cairo backend for Bloch sphere animations.
+
+    """
     if np.isscalar(time_increments):
         time_increments = np.full_like(magnetization, time_increments)[..., 0]
     if engine == 'manim-cairo':
@@ -85,7 +151,7 @@ def bloch_sphere(magnetization, B_field=None, time_increments=0.1, speed=None,
         manim.scene.scene.tqdm = tqdm
 
         from manim import config, tempconfig
-        from asl_bloch_sim.backends.manim_cairo import BlochScene
+        from gigablochs.backends.manim_cairo import BlochScene
 
         kwargs['quality'] = quality
         kwargs['progress_bar'] = progress_bar

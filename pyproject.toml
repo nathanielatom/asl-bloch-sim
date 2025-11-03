@@ -1,6 +1,6 @@
 [project]
-name = "asl_bloch_sim"
-version = "0.0.1"
+name = "gigablochs"
+version = "0.2.0"
 authors = [
   { name="Adam Suban-Loewen"},
 ]
@@ -8,7 +8,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-description = "Bloch Simulations of Arterial Spin Labelling (ASL)"
+description = "A flexible Bloch simulation framework enabling large parameter space investigations, such as for Arterial Spin Labelling (ASL)"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
@@ -17,17 +17,17 @@ dependencies = [
     "sympy",
     "bokeh",
     "tqdm",
+    "manim",
 ]
 
 [project.optional-dependencies]
 test = ["pytest"]
 docs = ["sphinx", "sphinx_rtd_theme", "numpydoc", "sphinxcontrib-bibtex", "sphinxcontrib-video"]
 gpu = ["cupy-cuda12x!=13.0.0"]
-animation = ["manim"]
 
 [tool.setuptools]
-py-modules = ["asl_bloch_sim"]
+py-modules = ["gigablochs"]
 
 [project.urls]
-Homepage = "https://github.com/nathanielatom/asl-bloch-sim"
-Issues = "https://github.com/nathanielatom/asl-bloch-sim/issues"
+Homepage = "https://nathanielatom.github.io/gigablochs"
+Issues = "https://github.com/nathanielatom/gigablochs/issues"

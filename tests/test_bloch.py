@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from asl_bloch_sim import bloch
+from gigablochs import bloch
 
 @pytest.mark.parametrize(
     "magnetization, T1, T2, expected_shape",

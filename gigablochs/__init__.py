@@ -3,7 +3,7 @@ import warnings as _warnings
 
 from tqdm.auto import tqdm
 
-__version__ = "0.0.1"
+__version__ = "0.2.0"
 
 def get_array_module(*args):
     import numpy as np

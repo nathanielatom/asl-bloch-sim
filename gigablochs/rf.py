@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.signal as sig
 
-from asl_bloch_sim import bloch, utils
+from gigablochs import bloch, utils
 
 def sinc_pulse(flip_angle, duration, bandwidth, dt, phase_angle=0, window='hann'):
     """
