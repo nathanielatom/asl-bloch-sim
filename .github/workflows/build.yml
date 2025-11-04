@@ -42,10 +42,12 @@ jobs:
       - name: install python dependencies
         run: |
           python -m pip install --upgrade pip setuptools
-          pip install .[test,docs]
-          pip show gigablochs
+          python -m pip install .[test,docs]
       - name: run tests
         run: |
+          python -c "import gigablochs; print(gigablochs.bloch)"
+          which pytest
+          pytest --version
           pytest
       - name: build docs
         run: |
