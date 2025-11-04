@@ -3,7 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-gigablochs documentation
+.. image:: _static/gigablochs_logo.png
+    :alt: GigaBlochs Logo
+    :align: right
+    :width: 300px
+
+GigaBlochs documentation
 ========================
 
 GigaBlochs is a flexible Bloch simulation framework enabling large parameter space
@@ -46,16 +51,15 @@ rotating at the instantaneous frequency of the pulse (which only coincides with 
 Larmor frequency when passing through the transverse plane):
 
 .. video:: _static/BlochScene_PASL.mp4
-    :width: 700
+    :width: 800
     :loop:
 
 |
 
 .. code-block:: python
 
-    import numpy as np
     from gigablochs import animation
-    animation.bloch_sphere(downsampled_magnetization, downsampled_b_field, np.gradient(time_steps))
+    animation.bloch_sphere(downsampled_magnetization, downsampled_b_field, time_interval)
 
 See `examples/Adiabatic Inversion Animation.ipynb <https://github.com/nathanielatom/gigablochs/blob/main/examples/Adiabatic%20Inversion%20Animation.ipynb>`__
 for the full simulation code.
@@ -69,6 +73,14 @@ from github run:
 .. code-block:: bash
 
     pip install git+https://github.com/nathanielatom/gigablochs
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   installation
+   quickstart
+   api_reference
 
 API Reference
 -------------
@@ -100,3 +112,9 @@ API Reference
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+References
+----------
+
+.. bibliography::
+

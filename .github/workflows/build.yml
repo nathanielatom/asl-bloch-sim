@@ -34,19 +34,20 @@ jobs:
       - name: setup python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.9
+          python-version: 3.12
       - name: install dependencies
         run: |
           python -m pip install --upgrade pip setuptools
           pip install .[test,docs]
           pip show gigablochs
           python -c "import gigablochs.bloch"
+      - name: run tests
+        run: |
+          pytest
       - name: build docs
         run: |
           cd docs
-          # make html
-          pip install -U magic-wormhole
-          wormhole receive --accept-file 1-dictator-uncut
+          make html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

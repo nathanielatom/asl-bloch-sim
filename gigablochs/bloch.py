@@ -292,7 +292,7 @@ def inverted_magnetization(magnetization, time, T1, position, magindex=-1, time_
     """
     Calculate labelling efficiency from final longitudinal magnetization at the end of the
     simulation by correcting for the T1 decay experienced by the spin isochromat since
-    crossing the labelling plane :cite:`Dai2008`.
+    crossing the labelling plane :cite:t:`Dai2008`.
 
     This provides a natural way to estimate the central tendency of the ringing/oscillatory magnetization
     signal at the time of inversion.
@@ -312,11 +312,6 @@ def inverted_magnetization(magnetization, time, T1, position, magindex=-1, time_
     - :math:`t_{final}` and :math:`t_{inversion}` are final and inversion times, respectively.
     - :math:`T_1` is the longitudinal relaxation.
 
-    References
-    ----------
-    W. Dai, D. Garcia, C. de Bazelaire, and D. C. Alsop, "Continuous flow-driven inversion for arterial spin
-    labeling using pulsed radio frequency and gradient fields," Magnetic Resonance in Medicine, vol. 60,
-    pp. 1488-1497, Nov. 2008.
     """
     xp = get_array_module(magnetization, position)
 
@@ -344,9 +339,8 @@ def labelling_efficiency(long_mag_inverted, long_mag_control=1):
 
     Returns
     -------
-    float or ndarray
-        The absolute labeling efficiency computed element-wise as
-            |long_mag_control - long_mag_inverted| / |2 * long_mag_control|.
+    efficiency : float or ndarray
+        The absolute labeling efficiency computed element-wise as `|long_mag_control - long_mag_inverted| / |2 * long_mag_control|`.
         The return has the same shape as the broadcasted inputs. For physically meaningful
         inputs, values typically lie in [0, 1].
 
