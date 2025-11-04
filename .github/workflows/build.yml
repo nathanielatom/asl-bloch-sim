@@ -45,7 +45,7 @@ jobs:
           python -m pip install .[test,docs]
       - name: run tests
         run: |
-          python -c "import gigablochs; print(gigablochs.bloch)"
+          python -c "from gigablochs import bloch, rf, flow; print(bloch.GAMMA)"
           which pytest
           pytest --version
           pytest
