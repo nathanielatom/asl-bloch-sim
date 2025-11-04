@@ -29,18 +29,21 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: checkout
         uses: actions/checkout@v4
       - name: setup python
         uses: actions/setup-python@v1
         with:
           python-version: 3.12
-      - name: install dependencies
+      - name: install pangocairo dependencies for manim
+        run: |
+          sudo apt update -y
+          sudo apt install -y libpangocairo-1.0-0 libcairo2-dev libpango1.0-dev
+      - name: install python dependencies
         run: |
           python -m pip install --upgrade pip setuptools
           pip install .[test,docs]
           pip show gigablochs
-          python -c "import gigablochs.bloch"
       - name: run tests
         run: |
           pytest
@@ -48,12 +51,12 @@ jobs:
         run: |
           cd docs
           make html
-      - name: Setup Pages
+      - name: setup pages
         uses: actions/configure-pages@v5
-      - name: Upload artifact
+      - name: upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: './docs/_build/html'
-      - name: Deploy to GitHub Pages
+      - name: deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
