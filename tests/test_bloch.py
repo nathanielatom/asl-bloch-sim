@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from gigablochs import bloch
+from gigablochs import bloch, utils
 
 @pytest.mark.parametrize(
     "magnetization, T1, T2, expected_shape",
@@ -102,5 +102,5 @@ def test_relax_integration():
     ],
 )
 def test_dot(a, b, keepdims, axis, expected):
-    result = bloch.dot(a, b, keepdims=keepdims, axis=axis)
+    result = utils.dot(a, b, keepdims=keepdims, axis=axis)
     np.testing.assert_array_equal(result, expected)
