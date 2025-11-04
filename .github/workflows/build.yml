@@ -45,9 +45,16 @@ jobs:
           python -m pip install .[test,docs]
       - name: run tests
         run: |
+          cd ..
           python -c "from gigablochs import bloch, rf, flow; print(bloch.GAMMA)"
+          cd -
           which pytest
           pytest --version
+          python -c "import sys, pprint; pprint.pprint(sys.executable); pprint.pprint(sys.path)"
+          python -c "import importlib.util, pprint; pprint.pprint(importlib.util.find_spec('gigablochs'))"
+          pip show gigablochs
+          python -c "import pkgutil; print(list(pkgutil.iter_modules()))" | grep gigablochs
+          ls -la $(python -c "import site, pprint, sys; print(site.getsitepackages()[0])") | grep gigablochs
           pytest
       - name: build docs
         run: |
