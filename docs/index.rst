@@ -74,6 +74,56 @@ from github run:
 
     pip install git+https://github.com/nathanielatom/gigablochs
 
+For GPU acceleration using cupy, ensure you have a
+`compatible NVIDIA GPU and CUDA toolkit <https://docs.cupy.dev/en/stable/install.html#requirements>`__
+installed, then install gigablochs with the `gpu` extra:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/nathanielatom/gigablochs[gpu]
+
+For 3D animation of the Bloch sphere using manim,
+`install dependencies <https://docs.manim.community/en/stable/installation.html>`__
+as shown below and include the `animation` extra:
+
+.. .. :::{tab-set}
+
+.. ::{tab-item} Ubuntu / Debian / Windows Subsystem for Linux (WSL)
+.. ```bash
+.. sudo apt update
+.. sudo apt install build-essential pkg-config libcairo2-dev libpango1.0-dev
+.. pip install git+https://github.com/nathanielatom/gigablochs[animation]
+.. ```
+.. .. ::
+
+.. ::{tab-item} macOS
+.. ```bash
+.. /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+.. brew install cairo pkg-config
+.. pip install git+https://github.com/nathanielatom/gigablochs[animation]
+.. ```
+.. .. ::
+
+.. .. :::
+
+.. tab-set::
+    .. tab-item:: Ubuntu / Debian / Windows Subsystem for Linux (WSL)
+        .. code-block:: bash
+
+            sudo apt update
+            sudo apt install build-essential pkg-config libcairo2-dev libpango1.0-dev
+            pip install git+https://github.com/nathanielatom/gigablochs[animation]
+
+    .. tab-item:: macOS
+        .. code-block:: bash
+
+            # install brew package manager if not already installed
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            brew install cairo pkg-config
+            pip install git+https://github.com/nathanielatom/gigablochs[animation]
+
+Both extras can be installed at once with `[animation,gpu]`.
+
 .. toctree::
    :maxdepth: 1
    :hidden:

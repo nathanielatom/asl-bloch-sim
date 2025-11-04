@@ -17,13 +17,13 @@ dependencies = [
     "sympy",
     "bokeh",
     "tqdm",
-    "manim",
 ]
 
 [project.optional-dependencies]
 test = ["pytest"]
 docs = ["sphinx", "pydata_sphinx_theme", "numpydoc", "sphinxcontrib-bibtex", "sphinxcontrib-video", "sphinx_copybutton"]
 gpu = ["cupy-cuda12x!=13.0.0"]
+animation = ["manim"]
 
 [tool.setuptools]
 py-modules = ["gigablochs"]
