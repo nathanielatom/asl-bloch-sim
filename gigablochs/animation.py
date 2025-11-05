@@ -138,7 +138,9 @@ def bloch_sphere(magnetization, B_field=None, time_increments=0.1, speed=None,
 
     See Also
     --------
-    manim : Manim animation library.
+    manim.ThreeDScene : Base class for creating 3D scenes in Manim.
+    manim.Arrow3D : 3D arrow object in Manim.
+    manim.TracedPath : Trace the path of a moving object in Manim.
     downsample : Resample time-domain signals via Fourier or filtering methods.
     gigablochs.backends.manim_cairo.BlochScene : Manim Cairo backend for Bloch sphere animations.
 

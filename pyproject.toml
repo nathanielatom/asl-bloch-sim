@@ -21,7 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest"]
-docs = ["sphinx", "pydata_sphinx_theme", "numpydoc", "sphinxcontrib-bibtex", "sphinxcontrib-video", "sphinx_copybutton"]
+docs = ["sphinx", "pydata_sphinx_theme", "numpydoc", "sphinxcontrib-bibtex", "sphinxcontrib-video", "sphinx_copybutton", "sphinx-pyscript"]
 gpu = ["cupy-cuda12x!=13.0.0"]
 animation = ["manim"]
 

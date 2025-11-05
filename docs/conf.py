@@ -26,7 +26,9 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinxcontrib.video',
     'bokeh.sphinxext.bokeh_plot',
-    'sphinx_copybutton'
+    'sphinx_copybutton',
+    'sphinx_design',
+    'sphinx_pyscript',
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
