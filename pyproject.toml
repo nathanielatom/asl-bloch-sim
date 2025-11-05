@@ -26,6 +26,7 @@ gpu = ["cupy-cuda12x!=13.0.0"]
 animation = ["manim"]
 
 [tool.setuptools.packages.find]
+where = ["."]
 include = ["gigablochs*"]
 
 [project.urls]
