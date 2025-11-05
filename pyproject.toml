@@ -25,8 +25,8 @@ docs = ["sphinx", "pydata_sphinx_theme", "numpydoc", "sphinxcontrib-bibtex", "sp
 gpu = ["cupy-cuda12x!=13.0.0"]
 animation = ["manim"]
 
-[tool.setuptools]
-py-modules = ["gigablochs"]
+[tool.setuptools.packages.find]
+include = ["gigablochs*"]
 
 [project.urls]
 Homepage = "https://nathanielatom.github.io/gigablochs"
