@@ -48,7 +48,6 @@ jobs:
           pytest
       - name: build docs
         run: |
-          ls /opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/gigablochs/backends/
           cd docs
           make html
       - name: setup pages

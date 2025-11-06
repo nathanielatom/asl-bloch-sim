@@ -355,7 +355,7 @@ def labelling_efficiency(long_mag_inverted, long_mag_control=1):
     --------
     >>> labelling_efficiency(0.2)
     0.4
-    >>> labelling_efficiency(np.array([0.9, 0.8]))
-    array([0.05, 0.1])
+    >>> labelling_efficiency(np.array([0.9, 0.8, 0, -0.9, -1]))
+    array([0.05, 0.1, 0.5, 0.95, 1. ])
     """
     return xp.abs(long_mag_control - long_mag_inverted) / xp.abs(2 * long_mag_control)

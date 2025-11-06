@@ -9,7 +9,7 @@ Adiabatic Pulse Example
     - numpy
     - scipy
     - bokeh
-    - git+https://github.com/nathanielatom/gigablochs
+    - https://github.com/nathanielatom/gigablochs
 
 .. py-repl::
     :output: repl_output

@@ -3,11 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. image:: _static/gigablochs_logo.png
-    :alt: GigaBlochs Logo
-    :align: right
-    :width: 280px
-
 MRI Bloch Simulation
 ====================
 
@@ -54,8 +49,6 @@ Larmor frequency when passing through the transverse plane):
     :width: 800
     :loop:
 
-|
-
 .. code-block:: python
 
     from gigablochs import animation
@@ -64,30 +57,47 @@ Larmor frequency when passing through the transverse plane):
 See `examples/Adiabatic Inversion Animation.ipynb <https://github.com/nathanielatom/gigablochs/blob/main/examples/Adiabatic%20Inversion%20Animation.ipynb>`__
 for the full simulation code.
 
+.. toctree::
+    :maxdepth: 2
+    :caption: Examples
+    :hidden:
+
+    adiabatic_pulse_demo
+
+..
+    pcasl_demo
+    flow_demo
+    background_suppression_demo
+
 Installation
 ------------
 
-See dependencies in the `pyproject.toml` file for required and optional packages. To install gigablochs
-from github run:
+See dependencies in the `pyproject.toml` file for required and optional packages.
+To install GigaBlochs from github run:
 
 .. code-block:: bash
 
     pip install git+https://github.com/nathanielatom/gigablochs
 
+Advanced Installation
+---------------------
+
 For GPU acceleration using cupy, ensure you have a
-`compatible NVIDIA GPU and CUDA toolkit <https://docs.cupy.dev/en/stable/install.html#requirements>`__
-installed, then install gigablochs with the `gpu` extra:
+`compatible NVIDIA GPU and CUDA toolkit <https://docs.cupy.dev/en/stable/install.html#requirements>`__,
+then install GigaBlochs with the `gpu` extra:
 
 .. code-block:: bash
 
     pip install git+https://github.com/nathanielatom/gigablochs[gpu]
 
-For 3D animation of the Bloch sphere using manim,
+For 3D animations on the Bloch sphere using manim,
 `install dependencies <https://docs.manim.community/en/stable/installation.html>`__
 as shown below and include the `animation` extra:
 
 .. tab-set::
+
     .. tab-item:: Ubuntu / Debian / Windows Subsystem for Linux (WSL)
+
         .. code-block:: bash
 
             sudo apt update
@@ -95,6 +105,7 @@ as shown below and include the `animation` extra:
             pip install git+https://github.com/nathanielatom/gigablochs[animation]
 
     .. tab-item:: macOS
+
         .. code-block:: bash
 
             # install brew package manager if not already installed
@@ -104,44 +115,62 @@ as shown below and include the `animation` extra:
 
 Both extras can be installed at once with `[animation,gpu]`.
 
-.. toctree::
-    :maxdepth: 2
-    :caption: Contents:
-
-    adiabatic_pulse_demo
-    .. pcasl_demo
-    flow_demo
-    background_suppression_demo
-
-API Reference
--------------
-
+Animation
+---------
 .. autosummary::
     :toctree: _generated/
+    :caption: API - Animation
 
     gigablochs.animation.bloch_sphere
     gigablochs.backends.manim_cairo.BlochScene
-    gigablochs.utils.expand_dims_to
-    gigablochs.utils.dot
-    gigablochs.utils.rodrigues_rotation
+
+Bloch Simulation
+----------------
+.. autosummary::
+    :toctree: _generated/
+    :caption: API - Simulation
+
     gigablochs.bloch.construct_B_field
     gigablochs.bloch.unit_field_and_angle
     gigablochs.bloch.precess
     gigablochs.bloch.relax
     gigablochs.bloch.inverted_magnetization
     gigablochs.bloch.labelling_efficiency
+
+RF Pulses
+---------
+.. autosummary::
+    :toctree: _generated/
+    :caption: API - RF Pulses
+
     gigablochs.rf.sinc_pulse
     gigablochs.rf.adiabatic_pulse
     gigablochs.rf.adiabaticity
     gigablochs.rf.extend
+
+Flow Modelling
+--------------
+.. autosummary::
+    :toctree: _generated/
+    :caption: API - Flow Modelling
+
     gigablochs.flow.integrate_trajectory
     gigablochs.flow.constant
     gigablochs.flow.half_sin
     gigablochs.flow.exp_decay_train
     gigablochs.flow.holdsworth_cca
 
+Utilities
+---------
+.. autosummary::
+    :toctree: _generated/
+    :caption: API - Utilities
+
+    gigablochs.utils.expand_dims_to
+    gigablochs.utils.dot
+    gigablochs.utils.rodrigues_rotation
+
 References
 ----------
 
 .. bibliography::
-

@@ -52,7 +52,7 @@ autodoc_default_options = {'members': None}
 autosummary_generate = True
 default_role = 'py:obj'
 
-# # TODO: 1. fix latex rendering of \gammabar, physics package not working; 2. citations
+# # TODO: fix latex rendering of \gammabar, physics package not working
 # r"""
 # % define symbol \gammabar
 # \usepackage{stackengine}
@@ -62,39 +62,28 @@ default_role = 'py:obj'
 # """
 
 # # MathJax Latex equation settings
-# mathjax3_config = {
-#     'tex': {
-#         'macros': {
-#             'gammabar': r"""\ThisStyle{\ensurestackMath{%
-# \stackengine{-1.5\LMpt}{$$\SavedStyle\gamma$$}{$$\SavedStyle-$$}{O}{c}{F}{F}{L}}}""",
-#         },
-#         'packages': {'[+]': ['physics', 'stackengine', 'scalerel']},
-#     },
-#     'loader': {
-#         'load': ['[tex]/physics', '[tex]/stackengine', '[tex]/scalerel']
-#     }
-# }
+mathjax3_config = {
+    'tex': {
+        'macros': {
+            'gammabar': r"""\ThisStyle{\ensurestackMath{\stackengine{-1.5\LMpt}{$$\SavedStyle\gamma$$}{$$\SavedStyle-$$}{O}{c}{F}{F}{L}}}""",
+        },
+        'packages': {'[+]': ['ams', 'newcommand', 'configmacros', 'stackengine', 'scalerel', 'physics']},
+    },
+    'loader': {
+        'load': ['[tex]/physics'],
+    }
+}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'pydata_sphinx_theme'
-html_logo = "_static/gigablochs_logo.png"
-html_favicon = "_static/gigablochs_logo.png"
+html_theme = 'sphinx_book_theme'
+html_logo = "_static/gigablochs_logo_transparent.png"
+html_title = "GigaBlochs"
 html_theme_options = {
-    "logo": {
-        "text": "GigaBlochs",
-        "image_dark": "_static/gigablochs_logo.png",
-    },
-    "navigation_depth": 1,
-    "show_nav_level": 1,
-    "header_links_before_dropdown": 2,
-    "icon_links": [
-            {
-                "name": "GitHub",
-                "url": "https://github.com/nathanielatom/gigablochs",
-                "icon": "fa-brands fa-github",
-            }
-        ],
+    "repository_url": "https://github.com/nathanielatom/gigablochs",
+    "use_repository_button": True,
 }
+html_favicon = "_static/gigablochs_logo_small_icon_transparent.png"
 html_static_path = ['_static']
+html_css_files = ["custom.css"]
