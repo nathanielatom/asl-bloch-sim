@@ -57,12 +57,13 @@ Larmor frequency when passing through the transverse plane):
 See `examples/Adiabatic Inversion Animation.ipynb <https://github.com/nathanielatom/gigablochs/blob/main/examples/Adiabatic%20Inversion%20Animation.ipynb>`__
 for the full simulation code.
 
-.. toctree::
-    :maxdepth: 2
-    :caption: Examples
-    :hidden:
+..
+    .. toctree::
+        :maxdepth: 2
+        :caption: Examples
+        :hidden:
 
-    adiabatic_pulse_demo
+        adiabatic_pulse_demo
 
 ..
     pcasl_demo
