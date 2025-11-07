@@ -8,6 +8,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E*"]
 description = "A flexible Bloch simulation framework enabling large parameter space investigations, such as for Arterial Spin Labelling (ASL)"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -20,6 +22,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+dev = ["setuptools", "build", "bump-my-version"]
 test = ["pytest"]
 docs = ["sphinx", "sphinx-book-theme", "numpydoc", "sphinxcontrib-bibtex", "sphinxcontrib-video", "sphinx_copybutton", "sphinx_design", "sphinx-pyscript"]
 gpu = ["cupy-cuda12x!=13.0.0"]
@@ -31,3 +34,8 @@ include = ["gigablochs*"]
 [project.urls]
 Homepage = "https://nathanielatom.github.io/gigablochs"
 Issues = "https://github.com/nathanielatom/gigablochs/issues"
+
+[tool.bumpversion]
+tag = true
+sign_tags = true
+commit = true
