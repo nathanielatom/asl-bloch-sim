@@ -53,7 +53,7 @@ jobs:
           python -m pip wheel .. --no-deps
       - name: generate docs
         run: |
-          cd ../docs
+          cd docs
           make html
       - name: setup pages
         uses: actions/configure-pages@v5

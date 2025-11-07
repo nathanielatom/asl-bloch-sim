@@ -73,12 +73,11 @@ for the full simulation code.
 Installation
 ------------
 
-See dependencies in the `pyproject.toml` file for required and optional packages.
-To install GigaBlochs from github run:
+To install GigaBlochs, simply run:
 
 .. code-block:: bash
 
-    pip install git+https://github.com/nathanielatom/gigablochs
+    pip install gigablochs
 
 Advanced Installation
 ---------------------
@@ -89,7 +88,7 @@ then install GigaBlochs with the `gpu` extra:
 
 .. code-block:: bash
 
-    pip install git+https://github.com/nathanielatom/gigablochs[gpu]
+    pip install gigablochs[gpu]
 
 For 3D animations on the Bloch sphere using manim,
 `install dependencies <https://docs.manim.community/en/stable/installation.html>`__
@@ -103,7 +102,7 @@ as shown below and include the `animation` extra:
 
             sudo apt update
             sudo apt install build-essential pkg-config libcairo2-dev libpango1.0-dev
-            pip install git+https://github.com/nathanielatom/gigablochs[animation]
+            pip install gigablochs[animation]
 
     .. tab-item:: macOS
 
@@ -112,9 +111,16 @@ as shown below and include the `animation` extra:
             # install brew package manager if not already installed
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
             brew install cairo pkg-config
-            pip install git+https://github.com/nathanielatom/gigablochs[animation]
+            pip install gigablochs[animation]
 
-Both extras can be installed at once with `[animation,gpu]`.
+Both extras can be installed at once with `gigablochs[animation,gpu]`.
+
+See dependencies in the `pyproject.toml` file for required and optional packages.
+To install the very latest commit from github run:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/nathanielatom/gigablochs
 
 Animation
 ---------
