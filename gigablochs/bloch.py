@@ -52,12 +52,14 @@ def construct_B_field(rf_am, G=0, position=0, *, off_resonance=0, B1_sensitivity
     .. math::
 
         B_x = \\Delta B_1 \\Re{RF_{AM}}
+
         B_y = \\Delta B_1 \\Im{RF_{AM}}
-        B_z = G \\cdot r + \\frac{RF_{FM}}{\\gammabar} + \\frac{\\Delta f}{\\gammabar}
+
+        B_z = \\vec{G} \\cdot \\vec{r} + \\frac{RF_{FM}}{\\gammabar} + \\frac{\\Delta f}{\\gammabar}
 
     where :math:`B_x`, :math:`B_y`, and :math:`B_z` are the magnetic field components,
     :math:`\\Delta B_1` is the unitless B1 sensitivity factor, :math:`RF_{AM}` is the RF amplitude modulation waveform in Tesla,
-    :math:`G` is the gradient waveform in Tesla/m, :math:`r` is the spin's spatial position waveform in meters,
+    :math:`\\vec{G}` is the gradient waveform in Tesla/m, :math:`\\vec{r}` is the spin's spatial position waveform in meters,
     :math:`RF_{FM}` is the RF frequency modulation waveform in Hz, :math:`\\gammabar` is the reduced gyromagnetic ratio in Hz/T,
     and :math:`\\Delta f` is the off-resonance frequency in Hz.
 

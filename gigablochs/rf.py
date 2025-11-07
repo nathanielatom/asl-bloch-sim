@@ -33,11 +33,11 @@ def sinc_pulse(flip_angle, duration, bandwidth, dt, phase_angle=0, window='hann'
 
     .. math::
 
-            \\theta = \\gamma \\int B_1 dt
+            \\theta = \\gamma \\int_0^T B_1 dt
 
-        where :math:`\\theta` is the flip angle, :math:`\\gamma` is the gyromagnetic
-        ratio, and :math:`B_1` is the pulse amplitude. The sinc pulse is normalized
-        to achieve the desired flip angle.
+    where :math:`\\theta` is the flip angle in rads, :math:`\\gamma` is the gyromagnetic
+    ratio in rads/s/T, :math:`T` is the pulse duration is s, and :math:`B_1` is the pulse
+    amplitude in T. The sinc pulse is normalized to achieve the desired flip angle.
 
     """
     theta, alpha = np.deg2rad(phase_angle), np.deg2rad(flip_angle)
@@ -73,14 +73,13 @@ def adiabaticity(pulse_am, pulse_fm, dt):
 
     .. math::
 
-        K = \\frac{\\left | \\gamma B_{\\mathrm{effective}} \\right |}{\\left | \\dv{\\varphi}{t} \\right |} = \\frac{\\gamma\\sqrt{A^2(t) + \\left ( B_0 - \\frac{\\omega(t)}{\\gamma} \\right )^2}}{\\dv{}{t}\\left ( \\arctan(\\frac{A(t)}{B_0 - \\frac{\\omega(t)}{\\gamma}}) \\right )}
+        K = \\frac{\\left | \\gamma B_{\\mathrm{effective}} \\right |}{\\left | \\dv{\\varphi}{t} \\right |} = \\frac{\\gamma\\sqrt{A^2(t) + \\left (\\frac{f(t)}{\\gammabar} \\right )^2}}{\\left| \\dv{}{t}\\left ( \\arctan(\\frac{\\gammabar A(t)}{f(t)}) \\right ) \\right|}
 
-    where :math:`A(t)` and :math:`\\omega(t)` are the amplitude and frequency
-    modulation waveforms, respectively, and :math:`B_0` is the static magnetic
-    field. The adiabaticity is a measure of the ability of the pulse to drive
-    the magnetization to follow the instantaneous effective magnetic field in
-    the rotating frame. When the adiabaticity is much greater than 1, for all
-    time, the pulse is considered adiabatic.
+    where :math:`A(t)` and :math:`f(t)` are the amplitude and frequency
+    modulation waveforms, respectively. The adiabaticity is a measure of the
+    ability of the pulse to drive the magnetization to follow the
+    instantaneous effective magnetic field in the rotating frame. When the
+    adiabaticity is much greater than 1, for all time, the pulse is considered adiabatic.
 
     """
     Bz_eff = pulse_fm / bloch.GAMMA_BAR

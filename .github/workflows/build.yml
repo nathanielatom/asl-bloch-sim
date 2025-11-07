@@ -46,9 +46,14 @@ jobs:
       - name: run tests
         run: |
           pytest
-      - name: build docs
+      - name: build wheel
         run: |
-          cd docs
+          mkdir dist
+          cd dist
+          python -m pip wheel .. --no-deps
+      - name: generate docs
+        run: |
+          cd ../docs
           make html
       - name: setup pages
         uses: actions/configure-pages@v5

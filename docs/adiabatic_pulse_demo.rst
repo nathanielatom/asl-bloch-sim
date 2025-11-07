@@ -9,7 +9,7 @@ Adiabatic Pulse Example
     - numpy
     - scipy
     - bokeh
-    - https://github.com/nathanielatom/gigablochs
+    - gigablochs
 
 .. py-repl::
     :output: repl_output
@@ -17,6 +17,7 @@ Adiabatic Pulse Example
     print("hallo world")
     import numpy as np
     import scipy.signal as sig
+    from bokeh.plotting import show
     from gigablochs import bloch, rf, flow
     print(bloch.GAMMA)
 

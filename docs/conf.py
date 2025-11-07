@@ -38,6 +38,7 @@ intersphinx_mapping = {
     'cupy': ('https://docs.cupy.dev/en/stable/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'pandas': ('http://pandas.pydata.org/pandas-docs/stable/', None),
+    'sympy': ('https://docs.sympy.org/latest/', None),
     'bokeh': ('https://docs.bokeh.org/en/latest/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'manim': ('https://docs.manim.community/en/stable/', None),
@@ -52,22 +53,13 @@ autodoc_default_options = {'members': None}
 autosummary_generate = True
 default_role = 'py:obj'
 
-# # TODO: fix latex rendering of \gammabar, physics package not working
-# r"""
-# % define symbol \gammabar
-# \usepackage{stackengine}
-# \usepackage{scalerel}
-# \newcommand\gammabar{\ThisStyle{\ensurestackMath{%
-# \stackengine{-1.5\LMpt}{$$\SavedStyle\gamma$$}{$$\SavedStyle-$$}{O}{c}{F}{F}{L}}}}
-# """
-
-# # MathJax Latex equation settings
+# MathJax Latex equation settings
 mathjax3_config = {
     'tex': {
         'macros': {
-            'gammabar': r"""\ThisStyle{\ensurestackMath{\stackengine{-1.5\LMpt}{$$\SavedStyle\gamma$$}{$$\SavedStyle-$$}{O}{c}{F}{F}{L}}}""",
+            'gammabar': r'{\gamma\kern-0.55em\raise-0.25ex\hbox{--}}',
         },
-        'packages': {'[+]': ['ams', 'newcommand', 'configmacros', 'stackengine', 'scalerel', 'physics']},
+        'packages': {'[+]': ['physics']},
     },
     'loader': {
         'load': ['[tex]/physics'],
@@ -75,7 +67,6 @@ mathjax3_config = {
 }
 
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_book_theme'
 html_logo = "_static/gigablochs_logo_transparent.png"

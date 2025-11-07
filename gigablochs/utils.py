@@ -109,7 +109,7 @@ def rodrigues_rotation(v, k, theta, *, normalize=True, axis=-1):
 
     .. math::
 
-        v_{\\text{rot}} = v \\cos(\\theta) + (k \\times v) \\sin(\\theta) + k (k \\cdot v) (1 - \\cos(\\theta))
+        v_{\\text{rot}} = v \\cos\\theta + (k \\times v) \\sin\\theta + k (k \\cdot v) (1 - \\cos\\theta)
 
     where :math:`v_{\\text{rot}}` is the rotated vector, :math:`v` is the original vector, :math:`k` is the rotation axis,
     and :math:`\\theta` is the rotation angle.
