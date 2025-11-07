@@ -39,3 +39,9 @@ Issues = "https://github.com/nathanielatom/gigablochs/issues"
 tag = true
 sign_tags = true
 commit = true
+
+[[tool.bumpversion.files]]
+filename = "gigablochs/__init__.py"
+
+[[tool.bumpversion.files]]
+filename = "docs/conf.py"
