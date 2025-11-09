@@ -1,40 +1,118 @@
-# Arterial Spin Labelling (ASL) Bloch Simulations
+MRI Bloch Simulation
+====================
 
-## Pseudo-continuous ASL for different blood flow trajectories
+GigaBlochs is a flexible Bloch simulation framework enabling large parameter space
+investigations in Magnetic Resonance Imaging (MRI). The Bloch equations describe the
+time-evolution of magnetization in a magnetic field resulting from radiofrequency (RF) pulses,
+gradients waveforms, off-resonance effects, and motion of hydrogen nuclei (or "spins") through
+these fields, as in the case of pulsatile blood flow in arteries.
 
-### Linear Flow
+The capability to handle arbitrary, multi-dimensional spin properties which evolve at every
+timestep, combined with tools for flow modelling, allows for realistic simulations of
+complex sequences, such as Arterial Spin Labelling (ASL). ASL is a technique that uses the
+magnetization of blood as an endogenous contrast agent for quantification of perfusion.
 
-Linear or constant velocity blood flow is modelled in `Bloch PCASL Full Relaxation.ipynb`, `Bloch PCASL Max Labelling Efficiency Observed.ipynb`, and technically `Bloch PCASL No Flow.ipynb`. An example magnetization time signal for linear flow is shown below.
+Features
+--------
 
-![Linear Flow-Induced Adiabatic Inversion - PCASL Bloch Sim Magnetization vs Time](./poster_figures/Linear%20Flow-Induced%20Adiabatic%20Inversion%20-%20PCASL%20Bloch%20Sim%20Magnetization%20vs%20Time.png "Linear Flow-Induced Adiabatic Inversion - PCASL Bloch Sim Magnetization vs Time")
+- Simulate the full time-evolution of the magnetization following an arbitrary pulse sequence
+- Avoids the hard pulse approximation, constructing all B-field components from RF and gradient waveforms along with off-resonance effects
+- Uses numpy-style broadcasting to effectively run up to millions of Bloch simulations in parallel
+- Sophisticated blood flow modelling tools to incorportate friction and pulsatile flow effects when relevant
+- GPU acceleration using CuPy, with CPU fallback, for seamless and fully device-agnostic simulation code
+- Visualise the effect on magnetization of whole parameter grids using Bokeh
+- Animations of the magnetization dynamics in 3D on the Bloch Sphere using Manim
 
-### Quadratic Flow
+ASL Features
+------------
 
-Quadratic or constantly accelerating blood flow is modelled in `Bloch PCASL Quadratic Trajectory With Aliases.ipynb`. Note the increase in speed causes the bolus to cross several aliased labelling planes, as shown below.
+- Simulate PASL sequences or background suppression using adiabatic pulses
+- Simulate CASL with constant concurrent RF and gradients
+- Simulate PCASL with a train of RF sinc pulses and gradients
+- Use arbitrary flow trajectories to simulate the effect of pulsatile blood flow
+- Use the rigid tube model to simulate viscosity and vessel wall friction across arteries
 
-![Constantly Accelerating Flow and Aliased Labelling Planes](./poster_figures/Constantly%20Accelerating%20Flow%20and%20Aliased%20Labelling%20Planes.png "Constantly Accelerating Flow and Aliased Labelling Planes")
+Example
+-------
 
-### Carotid Flow
+Pulsed ASL (PASL) uses an adiabatic pulse to label a slab of blood in one go. Here's an
+animation on the Bloch sphere of an adiabatic inversion pulse in a reference frame
+rotating at the instantaneous frequency of the pulse (which only coincides with the
+Larmor frequency when passing through the transverse plane):
 
-Systolic-diastolic blood flow velocity in the carotid artery is modelled in `Bloch PCASL Systolic-diastolic Carotid Trajectory.ipynb`, and shown below.
+.. video:: _static/BlochScene_PASL.mp4
+    :width: 800
+    :loop:
 
-![Carotid Flow with a Slow Bolus Crossing the Labelling Plane](./poster_figures/Carotid%20Flow%20with%20a%20Slow%20Bolus%20Crossing%20the%20Labelling%20Plane.png "Carotid Flow with a Slow Bolus Crossing the Labelling Plane")
+.. code-block:: python
 
-### Aortic Flow
+    from gigablochs import animation
+    animation.bloch_sphere(downsampled_magnetization, downsampled_b_field, time_interval)
 
-Systolic-diastolic blood flow velocity in the aorta is modelled in `Bloch PCASL Systolic-diastolic Aortic Trajectory.ipynb` and `Bloch PCASL Systolic-diastolic Aortic Trajectory - Postion Offset.ipynb`, and shown below for two boluses, moving fast and slow across the labelling plane.
+See `examples/Adiabatic Inversion Animation.ipynb <https://github.com/nathanielatom/gigablochs/blob/main/examples/Adiabatic%20Inversion%20Animation.ipynb>`__
+for the full simulation code.
 
-![Aortic Flow with a Fast Bolus Crossing the Labelling Plane](./poster_figures/Aortic%20Flow%20with%20a%20Fast%20Bolus%20Crossing%20the%20Labelling%20Plane.png "Aortic Flow with a Fast Bolus Crossing the Labelling Plane")
+..
+    .. toctree::
+        :maxdepth: 2
+        :caption: Examples
+        :hidden:
 
-![Aortic Flow with a Slow Bolus Crossing the Labelling Plane](./poster_figures/Aortic%20Flow%20with%20a%20Slow%20Bolus%20Crossing%20the%20Labelling%20Plane.png "Aortic Flow with a Slow Bolus Crossing the Labelling Plane")
+        adiabatic_pulse_demo
 
-Built atop a previous project from 2022:
+..
+    pcasl_demo
+    flow_demo
+    background_suppression_demo
 
-# EECE 597 Engineering Demo
+Installation
+------------
 
-## Comparing kinetic models and Bloch simulations for quantitative perfusion imaging with Arterial Spin Labelling
+To install GigaBlochs, simply run:
 
-### University of British Columbia - Electrical and Computer Engineering
+.. code-block:: bash
 
-This repo houses Jupyter notebooks comprising the EECE 597 demo. `Bloch ASL PCASL-GRASE.ipynb` encapsulates the majority of the Bloch simulations prototyped in other notebooks. `Kinetic ASL Model.ipynb` contains a CASL model shown in an interactive plot for adjusting model parameters in real-time. All figures produced for the EECE 597 report can be found in the top-level notebooks.
+    pip install git+https://github.com/nathanielatom/gigablochs
 
+Advanced Installation
+---------------------
+
+For GPU acceleration using cupy, ensure you have a
+`compatible NVIDIA GPU and CUDA toolkit <https://docs.cupy.dev/en/stable/install.html#requirements>`__,
+then install GigaBlochs with the `gpu` extra:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/nathanielatom/gigablochs[gpu]
+
+For 3D animations on the Bloch sphere using manim,
+`install dependencies <https://docs.manim.community/en/stable/installation.html>`__
+as shown below and include the `animation` extra:
+
+.. tab-set::
+
+    .. tab-item:: Ubuntu / Debian / Windows Subsystem for Linux (WSL)
+
+        .. code-block:: bash
+
+            sudo apt update
+            sudo apt install build-essential pkg-config libcairo2-dev libpango1.0-dev
+            pip install git+https://github.com/nathanielatom/gigablochs[animation]
+
+    .. tab-item:: macOS
+
+        .. code-block:: bash
+
+            # install brew package manager if not already installed
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            brew install cairo pkg-config
+            pip install git+https://github.com/nathanielatom/gigablochs[animation]
+
+Both extras can be installed at once with `gigablochs[animation,gpu]`.
+
+See dependencies in the `pyproject.toml` file for required and optional packages.
+To install the very latest commit from github run:
+
+.. code-block:: bash
+
+    pip install git+https://github.com/nathanielatom/gigablochs
